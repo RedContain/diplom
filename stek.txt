@@ -1,6 +1,0 @@
-python 3.11
-Qt - designer
-pyside6-designer
-pycharm
-postgreSQL 18
-
