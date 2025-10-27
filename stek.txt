@@ -3,4 +3,4 @@ Qt - designer
 pyside6-designer
 pycharm
 postgreSQL 18
-
+pytest
