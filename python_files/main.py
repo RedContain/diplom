@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox   # Шаблон полключения главного окна
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from ui_main import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -12,4 +12,3 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
-

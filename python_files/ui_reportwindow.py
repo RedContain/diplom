@@ -19,14 +19,14 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
     QGridLayout, QGroupBox, QLabel, QLineEdit,
     QMainWindow, QMenu, QMenuBar, QProgressBar,
-    QSizePolicy, QSpinBox, QTabWidget, QTextEdit,
-    QWidget)
+    QPushButton, QSizePolicy, QSpinBox, QTabWidget,
+    QTextEdit, QWidget)
 
 class Ui_reportWindow(object):
     def setupUi(self, reportWindow):
         if not reportWindow.objectName():
             reportWindow.setObjectName(u"reportWindow")
-        reportWindow.resize(1191, 754)
+        reportWindow.resize(1823, 763)
         self.action = QAction(reportWindow)
         self.action.setObjectName(u"action")
         self.action_2 = QAction(reportWindow)
@@ -58,7 +58,7 @@ class Ui_reportWindow(object):
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setEnabled(True)
-        self.tabWidget.setGeometry(QRect(10, 40, 681, 501))
+        self.tabWidget.setGeometry(QRect(10, 40, 1811, 641))
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.groupBox = QGroupBox(self.tab)
@@ -222,7 +222,7 @@ class Ui_reportWindow(object):
         self.groupBox_5.setGeometry(QRect(10, 350, 391, 111))
         self.gridLayoutWidget_11 = QWidget(self.groupBox_5)
         self.gridLayoutWidget_11.setObjectName(u"gridLayoutWidget_11")
-        self.gridLayoutWidget_11.setGeometry(QRect(10, 50, 371, 24))
+        self.gridLayoutWidget_11.setGeometry(QRect(10, 50, 371, 26))
         self.gridLayout_12 = QGridLayout(self.gridLayoutWidget_11)
         self.gridLayout_12.setObjectName(u"gridLayout_12")
         self.gridLayout_12.setContentsMargins(0, 0, 0, 0)
@@ -245,28 +245,28 @@ class Ui_reportWindow(object):
         self.gridLayout_13 = QGridLayout(self.gridLayoutWidget_12)
         self.gridLayout_13.setObjectName(u"gridLayout_13")
         self.gridLayout_13.setContentsMargins(0, 0, 0, 0)
+        self.label_12 = QLabel(self.gridLayoutWidget_12)
+        self.label_12.setObjectName(u"label_12")
+
+        self.gridLayout_13.addWidget(self.label_12, 0, 2, 1, 1)
+
+        self.spinBox = QSpinBox(self.gridLayoutWidget_12)
+        self.spinBox.setObjectName(u"spinBox")
+        self.spinBox.setMaximumSize(QSize(51, 22))
+
+        self.gridLayout_13.addWidget(self.spinBox, 0, 3, 1, 1)
+
         self.checkBox = QCheckBox(self.gridLayoutWidget_12)
         self.checkBox.setObjectName(u"checkBox")
         self.checkBox.setCheckable(True)
         self.checkBox.setAutoRepeat(False)
         self.checkBox.setTristate(False)
 
-        self.gridLayout_13.addWidget(self.checkBox, 1, 2, 1, 1)
-
-        self.spinBox = QSpinBox(self.gridLayoutWidget_12)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setMaximumSize(QSize(51, 22))
-
-        self.gridLayout_13.addWidget(self.spinBox, 1, 1, 1, 1)
-
-        self.label_12 = QLabel(self.gridLayoutWidget_12)
-        self.label_12.setObjectName(u"label_12")
-
-        self.gridLayout_13.addWidget(self.label_12, 1, 0, 1, 1)
+        self.gridLayout_13.addWidget(self.checkBox, 0, 0, 1, 2)
 
         self.gridLayoutWidget_10 = QWidget(self.groupBox_5)
         self.gridLayoutWidget_10.setObjectName(u"gridLayoutWidget_10")
-        self.gridLayoutWidget_10.setGeometry(QRect(10, 20, 371, 24))
+        self.gridLayoutWidget_10.setGeometry(QRect(10, 20, 371, 26))
         self.gridLayout_5 = QGridLayout(self.gridLayoutWidget_10)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -283,23 +283,34 @@ class Ui_reportWindow(object):
 
         self.gridLayout_5.addWidget(self.comboBox_3, 0, 1, 1, 1)
 
+        self.groupBox_6 = QGroupBox(self.tab)
+        self.groupBox_6.setObjectName(u"groupBox_6")
+        self.groupBox_6.setGeometry(QRect(420, 10, 1381, 591))
+        self.line_2 = QFrame(self.tab)
+        self.line_2.setObjectName(u"line_2")
+        self.line_2.setGeometry(QRect(403, 20, 16, 581))
+        self.line_2.setFrameShape(QFrame.Shape.VLine)
+        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
         self.tabWidget.addTab(self.tab, "")
         self.tab_2 = QWidget()
         self.tab_2.setObjectName(u"tab_2")
         self.tabWidget.addTab(self.tab_2, "")
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
-        self.line.setGeometry(QRect(10, 20, 1171, 20))
+        self.line.setGeometry(QRect(10, 20, 1171, 16))
         self.line.setFrameShape(QFrame.Shape.HLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
         self.progressBar = QProgressBar(self.centralwidget)
         self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setGeometry(QRect(10, 0, 1171, 23))
+        self.progressBar.setGeometry(QRect(10, 0, 1171, 21))
         self.progressBar.setValue(24)
+        self.pushButton = QPushButton(self.centralwidget)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QRect(970, 690, 211, 24))
         reportWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(reportWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1191, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1823, 33))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
@@ -371,15 +382,18 @@ class Ui_reportWindow(object):
         self.label_9.setText(QCoreApplication.translate("reportWindow", u"\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u043e\u0442\u0447\u0435\u0442\u0430:", None))
         self.label_10.setText(QCoreApplication.translate("reportWindow", u"\u041e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043e\u0442\u0447\u0435\u0442\u0430:", None))
         self.label_11.setText(QCoreApplication.translate("reportWindow", u"\u041d\u043e\u043c\u0435\u0440 \u043f\u0440\u0438\u043a\u0430\u0437\u0430:*", None))
+        self.lineEdit_4.setText("")
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_3), QCoreApplication.translate("reportWindow", u"\u0418\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0438\u0437\u0430\u0438\u0446\u0438\u044f", None))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_4), QCoreApplication.translate("reportWindow", u"\u041f\u043e\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u0435", None))
         self.groupBox_5.setTitle(QCoreApplication.translate("reportWindow", u"\u0412\u044b\u0431\u043e\u0440 \u043e\u043a\u0440\u0443\u0436\u0435\u043d\u0438\u044f:", None))
         self.label_6.setText(QCoreApplication.translate("reportWindow", u"\u0424\u0438\u043b\u0438\u0430\u043b:", None))
-        self.checkBox.setText(QCoreApplication.translate("reportWindow", u"\u0412\u043d\u0435\u0448\u043d\u0438\u0435 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f", None))
         self.label_12.setText(QCoreApplication.translate("reportWindow", u"\u042d\u0442\u0430\u0436:", None))
+        self.checkBox.setText(QCoreApplication.translate("reportWindow", u"\u0412\u043d\u0435\u0448\u043d\u0438\u0435 \u043f\u043e\u043c\u0435\u0449\u0435\u043d\u0438\u044f", None))
         self.label_5.setText(QCoreApplication.translate("reportWindow", u"\u041f\u0440\u0435\u0434\u043f\u0440\u0438\u044f\u0442\u0438\u0435:", None))
+        self.groupBox_6.setTitle(QCoreApplication.translate("reportWindow", u"\u0417\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("reportWindow", u"\u0418\u043d\u0432\u0435\u043d\u0442\u0430\u0440\u0438\u0437\u0430\u0438\u0446\u0438\u044f", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("reportWindow", u"\u041f\u043e\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u0435", None))
+        self.pushButton.setText(QCoreApplication.translate("reportWindow", u"\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c", None))
         self.menu.setTitle(QCoreApplication.translate("reportWindow", u"\u0424\u0430\u0439\u043b", None))
         self.menu_2.setTitle(QCoreApplication.translate("reportWindow", u"\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438", None))
         self.menu_4.setTitle(QCoreApplication.translate("reportWindow", u"\u0421\u043f\u0440\u0430\u0432\u043a\u0430", None))
