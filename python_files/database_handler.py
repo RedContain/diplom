@@ -22,7 +22,8 @@ class DatabaseHandler:
                 worker_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name_id TEXT NOT NULL,
                 job_title TEXT NOT NULL,
-                report_count INTEGER NOT NULL
+                report_count INTEGER NOT NULL,
+                date_of_work TEXT NOT NULL
             )
         ''')
 
