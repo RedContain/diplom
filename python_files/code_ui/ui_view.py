@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'view.ui'
+## Form generated from reading UI file 'View.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -26,7 +26,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1064, 745)
+        MainWindow.resize(1063, 745)
         self.action = QAction(MainWindow)
         self.action.setObjectName(u"action")
         self.action_2 = QAction(MainWindow)
@@ -303,10 +303,10 @@ class Ui_MainWindow(object):
         self.label_12.setGeometry(QRect(500, 420, 171, 16))
         self.pushButton_4 = QPushButton(self.centralwidget)
         self.pushButton_4.setObjectName(u"pushButton_4")
-        self.pushButton_4.setGeometry(QRect(500, 680, 561, 24))
+        self.pushButton_4.setGeometry(QRect(920, 680, 131, 24))
         self.pushButton_5 = QPushButton(self.centralwidget)
         self.pushButton_5.setObjectName(u"pushButton_5")
-        self.pushButton_5.setGeometry(QRect(0, 680, 501, 24))
+        self.pushButton_5.setGeometry(QRect(10, 680, 201, 24))
         self.groupBox_2 = QGroupBox(self.centralwidget)
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.groupBox_2.setGeometry(QRect(400, 520, 111, 61))
@@ -395,10 +395,13 @@ class Ui_MainWindow(object):
 
         self.gridLayout_22.addWidget(self.lineEdit_4, 0, 0, 1, 1)
 
+        self.pushButton_6 = QPushButton(self.centralwidget)
+        self.pushButton_6.setObjectName(u"pushButton_6")
+        self.pushButton_6.setGeometry(QRect(768, 680, 131, 24))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1064, 33))
+        self.menuBar.setGeometry(QRect(0, 0, 1063, 33))
         self.menu_4 = QMenu(self.menuBar)
         self.menu_4.setObjectName(u"menu_4")
         self.menu_5 = QMenu(self.menuBar)
@@ -473,6 +476,7 @@ class Ui_MainWindow(object):
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"\u0410\u0434\u043c\u0438\u043d\u0438\u0441\u0442\u0440\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435:", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c:", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c:", None))
+        self.pushButton_6.setText(QCoreApplication.translate("MainWindow", u"\u0421\u043a\u0430\u0447\u0430\u0442\u044c \u043a\u043e\u043d\u0444\u0438\u0433", None))
         self.menu_4.setTitle(QCoreApplication.translate("MainWindow", u"\u041e \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0435", None))
         self.menu_5.setTitle(QCoreApplication.translate("MainWindow", u"\u0410\u0432\u0442\u043e\u0440", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u0413\u043b\u0430\u0432\u043d\u043e\u0435 \u043c\u0435\u043d\u044e", None))
