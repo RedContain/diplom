@@ -9,7 +9,7 @@ class report_window(QMainWindow, Ui_reportWindow):                              
         super().__init__()
         self.setupUi(self)
 
-if __name__ == "__main__":                                                                                              #Главный класс(точка входа в программу)
+if __name__ == "__main__":                                                                                               #Главный класс(точка входа в программу)
     app = QApplication(sys.argv)
     window = report_window()
     window.show()
