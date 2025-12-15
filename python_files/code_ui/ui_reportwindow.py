@@ -18,16 +18,16 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
     QFormLayout, QFrame, QGridLayout, QGroupBox,
-    QLabel, QLineEdit, QMainWindow, QMenu,
-    QMenuBar, QProgressBar, QPushButton, QSizePolicy,
-    QSpinBox, QTabWidget, QTextEdit, QTimeEdit,
-    QWidget)
+    QHeaderView, QLabel, QLineEdit, QMainWindow,
+    QMenu, QMenuBar, QProgressBar, QPushButton,
+    QScrollBar, QSizePolicy, QSpinBox, QTabWidget,
+    QTableView, QTextEdit, QTimeEdit, QWidget)
 
 class Ui_reportWindow(object):
     def setupUi(self, reportWindow):
         if not reportWindow.objectName():
             reportWindow.setObjectName(u"reportWindow")
-        reportWindow.resize(1205, 747)
+        reportWindow.resize(1364, 747)
         self.action = QAction(reportWindow)
         self.action.setObjectName(u"action")
         self.action_2 = QAction(reportWindow)
@@ -59,7 +59,7 @@ class Ui_reportWindow(object):
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setEnabled(True)
-        self.tabWidget.setGeometry(QRect(10, 30, 1181, 641))
+        self.tabWidget.setGeometry(QRect(10, 30, 1351, 641))
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.groupBox = QGroupBox(self.tab)
@@ -349,18 +349,187 @@ class Ui_reportWindow(object):
 
         self.formLayout_2.setWidget(2, QFormLayout.ItemRole.FieldRole, self.label_16)
 
+        self.groupBox_9 = QGroupBox(self.tab_2)
+        self.groupBox_9.setObjectName(u"groupBox_9")
+        self.groupBox_9.setGeometry(QRect(510, 10, 411, 481))
+        self.gridLayoutWidget_13 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_13.setObjectName(u"gridLayoutWidget_13")
+        self.gridLayoutWidget_13.setGeometry(QRect(10, 30, 391, 31))
+        self.gridLayout_6 = QGridLayout(self.gridLayoutWidget_13)
+        self.gridLayout_6.setObjectName(u"gridLayout_6")
+        self.gridLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.label_17 = QLabel(self.gridLayoutWidget_13)
+        self.label_17.setObjectName(u"label_17")
+
+        self.gridLayout_6.addWidget(self.label_17, 0, 0, 1, 1)
+
+        self.comboBox_7 = QComboBox(self.gridLayoutWidget_13)
+        self.comboBox_7.setObjectName(u"comboBox_7")
+
+        self.gridLayout_6.addWidget(self.comboBox_7, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_14 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_14.setObjectName(u"gridLayoutWidget_14")
+        self.gridLayoutWidget_14.setGeometry(QRect(10, 70, 391, 31))
+        self.gridLayout_14 = QGridLayout(self.gridLayoutWidget_14)
+        self.gridLayout_14.setObjectName(u"gridLayout_14")
+        self.gridLayout_14.setContentsMargins(0, 0, 0, 0)
+        self.label_18 = QLabel(self.gridLayoutWidget_14)
+        self.label_18.setObjectName(u"label_18")
+
+        self.gridLayout_14.addWidget(self.label_18, 0, 0, 1, 1)
+
+        self.comboBox_8 = QComboBox(self.gridLayoutWidget_14)
+        self.comboBox_8.setObjectName(u"comboBox_8")
+
+        self.gridLayout_14.addWidget(self.comboBox_8, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_15 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_15.setObjectName(u"gridLayoutWidget_15")
+        self.gridLayoutWidget_15.setGeometry(QRect(10, 110, 391, 31))
+        self.gridLayout_15 = QGridLayout(self.gridLayoutWidget_15)
+        self.gridLayout_15.setObjectName(u"gridLayout_15")
+        self.gridLayout_15.setContentsMargins(0, 0, 0, 0)
+        self.label_19 = QLabel(self.gridLayoutWidget_15)
+        self.label_19.setObjectName(u"label_19")
+
+        self.gridLayout_15.addWidget(self.label_19, 0, 0, 1, 1)
+
+        self.lineEdit_5 = QLineEdit(self.gridLayoutWidget_15)
+        self.lineEdit_5.setObjectName(u"lineEdit_5")
+
+        self.gridLayout_15.addWidget(self.lineEdit_5, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_16 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_16.setObjectName(u"gridLayoutWidget_16")
+        self.gridLayoutWidget_16.setGeometry(QRect(10, 150, 391, 31))
+        self.gridLayout_16 = QGridLayout(self.gridLayoutWidget_16)
+        self.gridLayout_16.setObjectName(u"gridLayout_16")
+        self.gridLayout_16.setContentsMargins(0, 0, 0, 0)
+        self.label_20 = QLabel(self.gridLayoutWidget_16)
+        self.label_20.setObjectName(u"label_20")
+
+        self.gridLayout_16.addWidget(self.label_20, 0, 0, 1, 1)
+
+        self.dateEdit_2 = QDateEdit(self.gridLayoutWidget_16)
+        self.dateEdit_2.setObjectName(u"dateEdit_2")
+
+        self.gridLayout_16.addWidget(self.dateEdit_2, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_17 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_17.setObjectName(u"gridLayoutWidget_17")
+        self.gridLayoutWidget_17.setGeometry(QRect(10, 190, 391, 31))
+        self.gridLayout_17 = QGridLayout(self.gridLayoutWidget_17)
+        self.gridLayout_17.setObjectName(u"gridLayout_17")
+        self.gridLayout_17.setContentsMargins(0, 0, 0, 0)
+        self.label_21 = QLabel(self.gridLayoutWidget_17)
+        self.label_21.setObjectName(u"label_21")
+
+        self.gridLayout_17.addWidget(self.label_21, 0, 0, 1, 1)
+
+        self.lineEdit_6 = QLineEdit(self.gridLayoutWidget_17)
+        self.lineEdit_6.setObjectName(u"lineEdit_6")
+
+        self.gridLayout_17.addWidget(self.lineEdit_6, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_18 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_18.setObjectName(u"gridLayoutWidget_18")
+        self.gridLayoutWidget_18.setGeometry(QRect(10, 230, 391, 31))
+        self.gridLayout_18 = QGridLayout(self.gridLayoutWidget_18)
+        self.gridLayout_18.setObjectName(u"gridLayout_18")
+        self.gridLayout_18.setContentsMargins(0, 0, 0, 0)
+        self.label_22 = QLabel(self.gridLayoutWidget_18)
+        self.label_22.setObjectName(u"label_22")
+
+        self.gridLayout_18.addWidget(self.label_22, 0, 0, 1, 1)
+
+        self.lineEdit_7 = QLineEdit(self.gridLayoutWidget_18)
+        self.lineEdit_7.setObjectName(u"lineEdit_7")
+
+        self.gridLayout_18.addWidget(self.lineEdit_7, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_19 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_19.setObjectName(u"gridLayoutWidget_19")
+        self.gridLayoutWidget_19.setGeometry(QRect(10, 270, 201, 31))
+        self.gridLayout_19 = QGridLayout(self.gridLayoutWidget_19)
+        self.gridLayout_19.setObjectName(u"gridLayout_19")
+        self.gridLayout_19.setContentsMargins(0, 0, 0, 0)
+        self.label_23 = QLabel(self.gridLayoutWidget_19)
+        self.label_23.setObjectName(u"label_23")
+
+        self.gridLayout_19.addWidget(self.label_23, 0, 0, 1, 1)
+
+        self.gridLayoutWidget_20 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_20.setObjectName(u"gridLayoutWidget_20")
+        self.gridLayoutWidget_20.setGeometry(QRect(10, 350, 391, 41))
+        self.gridLayout_20 = QGridLayout(self.gridLayoutWidget_20)
+        self.gridLayout_20.setObjectName(u"gridLayout_20")
+        self.gridLayout_20.setContentsMargins(0, 0, 0, 0)
+        self.label_24 = QLabel(self.gridLayoutWidget_20)
+        self.label_24.setObjectName(u"label_24")
+
+        self.gridLayout_20.addWidget(self.label_24, 0, 0, 1, 1)
+
+        self.lineEdit_2 = QLineEdit(self.gridLayoutWidget_20)
+        self.lineEdit_2.setObjectName(u"lineEdit_2")
+
+        self.gridLayout_20.addWidget(self.lineEdit_2, 0, 1, 1, 1)
+
+        self.gridLayoutWidget_21 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_21.setObjectName(u"gridLayoutWidget_21")
+        self.gridLayoutWidget_21.setGeometry(QRect(10, 310, 351, 31))
+        self.gridLayout_21 = QGridLayout(self.gridLayoutWidget_21)
+        self.gridLayout_21.setObjectName(u"gridLayout_21")
+        self.gridLayout_21.setContentsMargins(0, 0, 0, 0)
+        self.label_25 = QLabel(self.gridLayoutWidget_21)
+        self.label_25.setObjectName(u"label_25")
+
+        self.gridLayout_21.addWidget(self.label_25, 0, 0, 1, 1)
+
+        self.pushButton_2 = QPushButton(self.groupBox_9)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.pushButton_2.setGeometry(QRect(10, 450, 171, 24))
+        self.gridLayoutWidget_22 = QWidget(self.groupBox_9)
+        self.gridLayoutWidget_22.setObjectName(u"gridLayoutWidget_22")
+        self.gridLayoutWidget_22.setGeometry(QRect(10, 400, 171, 48))
+        self.gridLayout_22 = QGridLayout(self.gridLayoutWidget_22)
+        self.gridLayout_22.setObjectName(u"gridLayout_22")
+        self.gridLayout_22.setContentsMargins(0, 0, 0, 0)
+        self.label_26 = QLabel(self.gridLayoutWidget_22)
+        self.label_26.setObjectName(u"label_26")
+
+        self.gridLayout_22.addWidget(self.label_26, 0, 0, 1, 1)
+
+        self.spinBox_2 = QSpinBox(self.gridLayoutWidget_22)
+        self.spinBox_2.setObjectName(u"spinBox_2")
+
+        self.gridLayout_22.addWidget(self.spinBox_2, 0, 1, 1, 1)
+
+        self.tableView = QTableView(self.tab_2)
+        self.tableView.setObjectName(u"tableView")
+        self.tableView.setGeometry(QRect(940, 20, 231, 471))
+        self.pushButton_3 = QPushButton(self.tab_2)
+        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.pushButton_3.setGeometry(QRect(1220, 20, 101, 24))
+        self.pushButton_4 = QPushButton(self.tab_2)
+        self.pushButton_4.setObjectName(u"pushButton_4")
+        self.pushButton_4.setGeometry(QRect(1220, 50, 101, 24))
+        self.verticalScrollBar = QScrollBar(self.tab_2)
+        self.verticalScrollBar.setObjectName(u"verticalScrollBar")
+        self.verticalScrollBar.setGeometry(QRect(1180, 20, 16, 471))
+        self.verticalScrollBar.setOrientation(Qt.Orientation.Vertical)
         self.tabWidget.addTab(self.tab_2, "")
         self.pushButton = QPushButton(self.centralwidget)
         self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QRect(980, 680, 211, 24))
+        self.pushButton.setGeometry(QRect(1150, 680, 211, 24))
         self.progressBar = QProgressBar(self.centralwidget)
         self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setGeometry(QRect(10, 0, 491, 21))
+        self.progressBar.setGeometry(QRect(10, 0, 1341, 21))
         self.progressBar.setValue(24)
         reportWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(reportWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1205, 33))
+        self.menubar.setGeometry(QRect(0, 0, 1364, 33))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
@@ -440,6 +609,20 @@ class Ui_reportWindow(object):
         self.label_14.setText(QCoreApplication.translate("reportWindow", u"\u0424\u0418\u041e:", None))
         self.label_15.setText(QCoreApplication.translate("reportWindow", u"\u0414\u043e\u043b\u0436\u043d\u043e\u0441\u0442\u044c:", None))
         self.label_16.setText(QCoreApplication.translate("reportWindow", u"None", None))
+        self.groupBox_9.setTitle(QCoreApplication.translate("reportWindow", u"\u041f\u043e\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u0435:", None))
+        self.label_17.setText(QCoreApplication.translate("reportWindow", u"\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f:", None))
+        self.label_18.setText(QCoreApplication.translate("reportWindow", u"\u0422\u0438\u043f:", None))
+        self.label_19.setText(QCoreApplication.translate("reportWindow", u"\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435:", None))
+        self.label_20.setText(QCoreApplication.translate("reportWindow", u"\u0414\u0430\u0442\u0430 \u043f\u0440\u0438\u0431\u044b\u0442\u0438\u044f:", None))
+        self.label_21.setText(QCoreApplication.translate("reportWindow", u"\u0421\u043e\u0441\u0442\u043e\u044f\u043d\u0438\u0435:", None))
+        self.label_22.setText(QCoreApplication.translate("reportWindow", u"\u0421\u0435\u0440\u0438\u0439\u043d\u044b\u0439 \u043d\u043e\u043c\u0435\u0440:", None))
+        self.label_23.setText(QCoreApplication.translate("reportWindow", u"\u041f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a:", None))
+        self.label_24.setText(QCoreApplication.translate("reportWindow", u"\u0426\u0435\u043d\u0430(\u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443):", None))
+        self.label_25.setText(QCoreApplication.translate("reportWindow", u"\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b \u043f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0430:", None))
+        self.pushButton_2.setText(QCoreApplication.translate("reportWindow", u"\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c", None))
+        self.label_26.setText(QCoreApplication.translate("reportWindow", u"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e:", None))
+        self.pushButton_3.setText(QCoreApplication.translate("reportWindow", u"\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c", None))
+        self.pushButton_4.setText(QCoreApplication.translate("reportWindow", u"\u041f\u0435\u0447\u0430\u0442\u044c", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("reportWindow", u"\u041f\u043e\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u0435", None))
         self.pushButton.setText(QCoreApplication.translate("reportWindow", u"\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c", None))
         self.menu.setTitle(QCoreApplication.translate("reportWindow", u"\u0424\u0430\u0439\u043b", None))
