@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow
-from ui_main import Ui_MainWindow
+from python_files.code_ui.ui_main import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):                                           # Инициализация класса
     def __init__(self):
@@ -13,7 +13,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):                                   
     def start_progress(self):                                                           # Функция, которая начинает отчитывать время
         self.counter = 0
         self.progressBar.setValue(0)
-
         self.timer = QTimer()                                                           #Таймер
         self.timer.timeout.connect(self.update_progress)
         self.timer.start(30)
@@ -23,9 +22,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):                                   
         self.progressBar.setValue(self.counter)
 
         if self.counter >= 100:
-            self.timer.stop()
-            self.progressBar.setValue(0)
-
+           self.timer.stop()
+           self.progressBar.setValue(0)
+           sys.exit(app.exec())
 
 
 if __name__ == "__main__":

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>779</width>
-    <height>261</height>
+    <width>777</width>
+    <height>485</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>431</width>
-     <height>251</height>
+     <height>431</height>
     </rect>
    </property>
    <property name="title">
@@ -31,17 +31,17 @@
       <x>10</x>
       <y>20</y>
       <width>391</width>
-      <height>221</height>
+      <height>401</height>
      </rect>
     </property>
    </widget>
-   <widget class="QSlider" name="verticalSlider">
+   <widget class="QScrollBar" name="verticalScrollBar">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>410</x>
       <y>20</y>
-      <width>31</width>
-      <height>221</height>
+      <width>16</width>
+      <height>401</height>
      </rect>
     </property>
     <property name="orientation">
@@ -58,7 +58,7 @@
      <x>450</x>
      <y>10</y>
      <width>321</width>
-     <height>151</height>
+     <height>161</height>
     </rect>
    </property>
    <property name="title">
@@ -96,31 +96,72 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>610</x>
-     <y>230</y>
-     <width>161</width>
-     <height>24</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Сохранить</string>
-   </property>
+   <widget class="QWidget" name="gridLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>301</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Назначен на должность с:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDateEdit" name="dateEdit"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QPushButton" name="pushButton_2">
    <property name="geometry">
     <rect>
-     <x>450</x>
-     <y>230</y>
+     <x>10</x>
+     <y>450</y>
      <width>161</width>
      <height>24</height>
     </rect>
    </property>
    <property name="text">
     <string>Сбросить все</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_4">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>210</y>
+     <width>91</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Удалить</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_3">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>180</y>
+     <width>91</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Сохранить</string>
    </property>
   </widget>
  </widget>
