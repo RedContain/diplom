@@ -3,7 +3,7 @@ import sys
 from contextlib import contextmanager
 from typing import List, Dict, Any
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QMainWindow, QApplication, QMessageBox
+from PySide6.QtWidgets import QMainWindow, QApplication, QMessageBox, QLineEdit
 
 from python_files.code_ui.ui_setting_employes import Ui_Form
 
@@ -12,13 +12,29 @@ class Ui_Form(QMainWindow, Ui_Form):                                            
         super().__init__()
         self.setupUi(self)
 
-class logic_window():
-    def __init__(self):
-        super().__init__()
+        #Кнопки, отвечающие за действия в блоке сотрудники(сам элемент + привязка к методу)
 
+        self.pushButton_3.clicked.connect(self.save_employees)
+
+    def save_employees(self): #сам метод(обращение к БД)
+        name = self.lineEdit.text()
+        job_title = self.lineEdit_2.text()
+        date = self.dateEdit.text()
+        try:
+            db_manager = DatabaseManager()
+            employees = db_manager.add_item(
+                name_id = name,
+                job_title = job_title,
+                date_of_work = date
+
+            )
+            print(f"Сотрудник добавлен! ID: {employees}")
+
+        except Exception as e:
+            print(f"Ошибка: {e}")
 
 class DatabaseManager:
-    def __init__(self, db_path: str = "database/database/company.db"):
+    def __init__(self,db_path = r"C:\Users\lowar\PycharmProjects\diplom\python_files\database\company.db"):
         self.db_path = db_path
 
     @contextmanager
@@ -40,7 +56,7 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             # Используем параметризованный запрос для безопасности
-            cursor.execute("PRAGMA table_info(?)", (table_name,))
+            cursor.execute("SELECT * FROM employees ORDER BY worker_id DESC")
             return [dict(row) for row in cursor.fetchall()]
 
     def test_connection(self) -> bool:
@@ -54,20 +70,33 @@ class DatabaseManager:
             print(f"Ошибка подключения к БД: {e}")
             return False
 
-    def item(self, name,description=""):
+    def add_item(self, name_id: str,job_title: str,report_count: int = 0,date_of_work: str = None) -> List[Dict]:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO employees (worker_id,name_id, job_title) VALUES (?, ?)",
-                (name, description)
+                "INSERT INTO employees (name_id, job_title, report_count, date_of_work) VALUES (?, ?, ?, ?)",
+                (name_id, job_title, report_count, "2024-01-01")  # date_of_work нужно как-то получить
             )
             return cursor.lastrowid
 
     def get_all_items(self):
-        with self.connect() as conn:
+        with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM employess ORDER BY id DESC")
+            cursor.execute("SELECT * FROM employees ORDER BY worker_id DESC")
             return [dict(row) for row in cursor.fetchall()]
+
+    def delete_item(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                cursor.execute("DELETE * FROM employees WHERE worker_id = ?", (None,))
+            )
+    def update_item(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                cursor.execute("")
+            )
 
 if __name__ == "__main__":                                                                                               #Главный класс(точка входа в программу)
     app = QApplication(sys.argv)
