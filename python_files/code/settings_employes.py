@@ -23,7 +23,7 @@ class MainWindow(QMainWindow, Ui_Form):
         self.load_data_to_table()
         self.pushButton_3.clicked.connect(self.save_employee)  # Кнопка "Сохранить/Добавить"
         self.pushButton_4.clicked.connect(self.delete_employee)  # Кнопка "Удалить"
-
+        self.pushButton_2.clicked.connect(self.reset_database)
         if hasattr(self, 'pushButton'):
             self.pushButton.clicked.connect(self.update_employee)  # Кнопка "Обновить"
 
@@ -250,7 +250,7 @@ class MainWindow(QMainWindow, Ui_Form):
                         "Успех",
                         f"Сотрудник {employee_name} удален!"
                     )
-                    print(f"✅ Сотрудник #{worker_id} удален")
+                    print(f"Сотрудник #{worker_id} удален")
 
                     # Если удаляем редактируемого сотрудника
                     if self.selected_employee_id == worker_id:
@@ -266,7 +266,7 @@ class MainWindow(QMainWindow, Ui_Form):
     def load_data_to_table(self):
         """Загружает данные из БД в таблицу"""
         if not hasattr(self, 'tableWidget') or self.tableWidget is None:
-            print("❌ tableWidget не найден")
+            print("tableWidget не найден")
             return
 
         try:
@@ -298,19 +298,49 @@ class MainWindow(QMainWindow, Ui_Form):
             table.setAlternatingRowColors(True)
             table.setSortingEnabled(True)
 
-            print(f"✅ Загружено {len(employees)} записей в таблицу")
+            print(f"Загружено {len(employees)} записей в таблицу")
 
         except Exception as e:
-            print(f"❌ Ошибка загрузки данных в таблицу: {e}")
+            print(f"Ошибка загрузки данных в таблицу: {e}")
+
+    def reset_database(self):
+        reply = QMessageBox.question(
+            self,
+            "⚠️ ОПАСНОЕ ДЕЙСТВИЕ",
+            "Вы уверены, что хотите полностью очистить базу данных?\n\n"
+            "Все данные о сотрудниках будут удалены безвозвратно!\n"
+            "Это действие нельзя отменить.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            try:
+                success = self.db_manager.reset_all_data()
+
+                if success:
+                    QMessageBox.information(
+                        self,
+                        "Успех",
+                        "База данных полностью очищена!"
+                    )
+                    self.clear_form()
+                    self.load_data_to_table()
+                    print("База данных сброшена")
+                else:
+                    QMessageBox.warning(self, "Ошибка", "Не удалось очистить базу данных")
+
+            except Exception as e:
+                QMessageBox.critical(self, "Ошибка", f"Ошибка при сбросе БД:\n{str(e)}")
 
 
 class DatabaseManager:
     def __init__(self, db_path: str = r"C:\Users\lowar\PycharmProjects\diplom\python_files\database\company.db"):
         self.db_path = db_path
-        print(f"📊 Путь к БД: {self.db_path}")
+        print(f"Путь к БД: {self.db_path}")
 
         if not self.test_connection():
-            print("❌ Не удалось подключиться к БД")
+            print("Не удалось подключиться к БД")
 
     @contextmanager
     def get_connection(self):
@@ -332,7 +362,7 @@ class DatabaseManager:
                 cursor.execute("SELECT 1")
                 return True
         except Exception as e:
-            print(f"❌ Ошибка подключения к БД: {e}")
+            print(f"Ошибка подключения к БД: {e}")
             return False
 
     def add_item(self, name_id: str, job_title: str, date_of_work: str = None, report_count: int = 0) -> int:
@@ -357,7 +387,7 @@ class DatabaseManager:
                 cursor.execute("SELECT * FROM employees ORDER BY worker_id DESC")
                 return [dict(row) for row in cursor.fetchall()]
         except Exception as e:
-            print(f"❌ Ошибка получения данных: {e}")
+            print(f"Ошибка получения данных: {e}")
             return []
 
     def get_item_by_id(self, worker_id: int) -> Dict:
@@ -369,11 +399,11 @@ class DatabaseManager:
                 row = cursor.fetchone()
                 return dict(row) if row else {}
         except Exception as e:
-            print(f"❌ Ошибка получения сотрудника: {e}")
+            print(f"Ошибка получения сотрудника: {e}")
             return {}
 
     def update_item(self, worker_id: int, **kwargs) -> bool:
-        """Обновляет сотрудника"""
+
         if not kwargs:
             return False
 
@@ -411,16 +441,21 @@ class DatabaseManager:
                 return cursor.rowcount > 0
 
         except Exception as e:
-            print(f"❌ Ошибка обновления: {e}")
+            print(f"Ошибка обновления: {e}")
             return False
 
     def delete_item(self, worker_id: int) -> bool:
-        """Удаляет сотрудника"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM employees WHERE worker_id = ?", (worker_id,))
             return cursor.rowcount > 0
 
+    def reset_all_data(self) -> bool:
+        """Очищает все данные в таблице employees"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM employees")
+            return cursor.rowcount >= 0  # Всегда True если нет ошибок
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
