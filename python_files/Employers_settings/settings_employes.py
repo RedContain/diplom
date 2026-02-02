@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
 )
 from PySide6.QtCore import QDate
-from python_files.code_ui.ui_setting_employes import Ui_Form
+from python_files.Employers_settings.ui_setting_employes import Ui_Form
 
 
 class MainWindow(QMainWindow, Ui_Form):

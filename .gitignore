@@ -1,2 +1,9 @@
 .idea/
 .venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.sqlite
+*.db

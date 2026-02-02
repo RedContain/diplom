@@ -17,8 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDateEdit, QGridLayout, QGroupBox,
     QHeaderView, QLabel, QLineEdit, QPushButton,
-    QScrollBar, QSizePolicy, QTableWidget, QTableWidgetItem,
-    QWidget)
+    QSizePolicy, QTableWidget, QTableWidgetItem, QWidget)
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -30,14 +29,10 @@ class Ui_Form(object):
         self.groupBox.setGeometry(QRect(10, 10, 431, 431))
         self.tableWidget = QTableWidget(self.groupBox)
         self.tableWidget.setObjectName(u"tableWidget")
-        self.tableWidget.setGeometry(QRect(10, 20, 391, 401))
-        self.verticalScrollBar = QScrollBar(self.groupBox)
-        self.verticalScrollBar.setObjectName(u"verticalScrollBar")
-        self.verticalScrollBar.setGeometry(QRect(410, 20, 16, 401))
-        self.verticalScrollBar.setOrientation(Qt.Orientation.Vertical)
+        self.tableWidget.setGeometry(QRect(10, 20, 411, 401))
         self.groupBox_2 = QGroupBox(Form)
         self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setEnabled(False)
+        self.groupBox_2.setEnabled(True)
         self.groupBox_2.setGeometry(QRect(450, 10, 321, 161))
         self.gridLayoutWidget = QWidget(self.groupBox_2)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
@@ -83,15 +78,30 @@ class Ui_Form(object):
 
         self.pushButton_2 = QPushButton(Form)
         self.pushButton_2.setObjectName(u"pushButton_2")
-        self.pushButton_2.setGeometry(QRect(10, 450, 161, 24))
+        self.pushButton_2.setGeometry(QRect(450, 270, 101, 24))
         self.pushButton_4 = QPushButton(Form)
         self.pushButton_4.setObjectName(u"pushButton_4")
         self.pushButton_4.setEnabled(True)
-        self.pushButton_4.setGeometry(QRect(450, 210, 91, 24))
+        self.pushButton_4.setGeometry(QRect(450, 210, 101, 24))
+        self.pushButton_4.setStyleSheet(u"")
         self.pushButton_3 = QPushButton(Form)
         self.pushButton_3.setObjectName(u"pushButton_3")
         self.pushButton_3.setEnabled(True)
-        self.pushButton_3.setGeometry(QRect(450, 180, 91, 24))
+        self.pushButton_3.setGeometry(QRect(450, 180, 101, 24))
+        self.pushButton = QPushButton(Form)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QRect(450, 240, 101, 24))
+        self.gridLayoutWidget_3 = QWidget(Form)
+        self.gridLayoutWidget_3.setObjectName(u"gridLayoutWidget_3")
+        self.gridLayoutWidget_3.setGeometry(QRect(450, 300, 111, 31))
+        self.gridLayout_3 = QGridLayout(self.gridLayoutWidget_3)
+        self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.label_4 = QLabel(self.gridLayoutWidget_3)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout_3.addWidget(self.label_4, 0, 0, 1, 1)
+
 
         self.retranslateUi(Form)
 
@@ -108,5 +118,7 @@ class Ui_Form(object):
         self.pushButton_2.setText(QCoreApplication.translate("Form", u"\u0421\u0431\u0440\u043e\u0441\u0438\u0442\u044c \u0432\u0441\u0435", None))
         self.pushButton_4.setText(QCoreApplication.translate("Form", u"\u0423\u0434\u0430\u043b\u0438\u0442\u044c", None))
         self.pushButton_3.setText(QCoreApplication.translate("Form", u"\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c", None))
+        self.pushButton.setText(QCoreApplication.translate("Form", u"\u0420\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c", None))
+        self.label_4.setText(QCoreApplication.translate("Form", u"\u0412\u0441\u0435\u0433\u043e \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432:", None))
     # retranslateUi
 

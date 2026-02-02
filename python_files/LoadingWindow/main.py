@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMainWindow
-from python_files.code_ui.ui_main import Ui_MainWindow
+from python_files.LoadingWindow.ui_main import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):                                           # Инициализация класса
     def __init__(self):
@@ -25,7 +25,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):                                   
            self.timer.stop()
            self.progressBar.setValue(0)
            sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
