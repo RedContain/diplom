@@ -88,13 +88,20 @@
       <rect>
        <x>140</x>
        <y>60</y>
-       <width>69</width>
+       <width>116</width>
        <height>41</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="1">
        <widget class="QSpinBox" name="spinBox"/>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="pushButton_6">
+        <property name="text">
+         <string>Сохранить</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -429,7 +436,7 @@
         <rect>
          <x>242</x>
          <y>150</y>
-         <width>141</width>
+         <width>161</width>
          <height>51</height>
         </rect>
        </property>
@@ -686,7 +693,7 @@
      <x>0</x>
      <y>0</y>
      <width>1064</width>
-     <height>33</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_4">
