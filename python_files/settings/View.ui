@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1064</width>
-    <height>745</height>
+    <width>1903</width>
+    <height>945</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>1051</width>
+      <width>1881</width>
       <height>501</height>
      </rect>
     </property>
@@ -69,7 +69,7 @@
       <rect>
        <x>10</x>
        <y>60</y>
-       <width>131</width>
+       <width>181</width>
        <height>41</height>
       </rect>
      </property>
@@ -77,7 +77,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Количество филиалов:</string>
+         <string>Количество филиалов/отделов:</string>
         </property>
        </widget>
       </item>
@@ -86,17 +86,17 @@
     <widget class="QWidget" name="gridLayoutWidget_4">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>190</x>
        <y>60</y>
-       <width>116</width>
+       <width>301</width>
        <height>41</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="1">
+      <item row="0" column="0">
        <widget class="QSpinBox" name="spinBox"/>
       </item>
-      <item row="0" column="2">
+      <item row="0" column="1">
        <widget class="QPushButton" name="pushButton_6">
         <property name="text">
          <string>Сохранить</string>
@@ -115,15 +115,12 @@
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_8">
-      <item row="2" column="1">
-       <widget class="QToolButton" name="toolButton">
+      <item row="2" column="0">
+       <widget class="QPushButton" name="pushButton">
         <property name="text">
-         <string>...</string>
+         <string>Редактировать</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QListWidget" name="listWidget"/>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_4">
@@ -132,47 +129,36 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Редактировать</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSlider" name="verticalSlider">
-        <property name="orientation">
-         <enum>Qt::Orientation::Vertical</enum>
-        </property>
-       </widget>
+      <item row="1" column="0">
+       <widget class="QListWidget" name="listWidget"/>
       </item>
      </layout>
     </widget>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
        <x>500</x>
-       <y>90</y>
-       <width>531</width>
-       <height>321</height>
+       <y>110</y>
+       <width>1371</width>
+       <height>301</height>
       </rect>
      </property>
      <property name="title">
-      <string>Редактирование филиала</string>
+      <string>Редактирование филиалов\отделов</string>
      </property>
      <widget class="QFrame" name="frame">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>521</width>
-        <height>291</height>
+        <width>1351</width>
+        <height>271</height>
        </rect>
       </property>
       <property name="font">
@@ -210,7 +196,7 @@
         <rect>
          <x>130</x>
          <y>10</y>
-         <width>381</width>
+         <width>781</width>
          <height>41</height>
         </rect>
        </property>
@@ -218,7 +204,7 @@
         <item row="0" column="0">
          <widget class="QLineEdit" name="lineEdit_2">
           <property name="text">
-           <string>Филиал №1</string>
+           <string>Название отдела\филиала</string>
           </property>
          </widget>
         </item>
@@ -253,8 +239,8 @@
       <widget class="QPushButton" name="pushButton_3">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>260</y>
+         <x>920</x>
+         <y>20</y>
          <width>221</width>
          <height>24</height>
         </rect>
@@ -266,9 +252,9 @@
       <widget class="QPushButton" name="pushButton_2">
        <property name="geometry">
         <rect>
-         <x>230</x>
-         <y>260</y>
-         <width>281</width>
+         <x>1220</x>
+         <y>240</y>
+         <width>121</width>
          <height>24</height>
         </rect>
        </property>
@@ -338,7 +324,7 @@
         <rect>
          <x>130</x>
          <y>50</y>
-         <width>381</width>
+         <width>781</width>
          <height>51</height>
         </rect>
        </property>
@@ -398,7 +384,7 @@
         <rect>
          <x>220</x>
          <y>100</y>
-         <width>171</width>
+         <width>131</width>
          <height>51</height>
         </rect>
        </property>
@@ -417,7 +403,7 @@
         <rect>
          <x>220</x>
          <y>200</y>
-         <width>151</width>
+         <width>111</width>
          <height>51</height>
         </rect>
        </property>
@@ -434,9 +420,9 @@
       <widget class="QWidget" name="gridLayoutWidget_24">
        <property name="geometry">
         <rect>
-         <x>242</x>
+         <x>232</x>
          <y>150</y>
-         <width>161</width>
+         <width>181</width>
          <height>51</height>
         </rect>
        </property>
@@ -469,22 +455,22 @@
    <widget class="QPushButton" name="pushButton_4">
     <property name="geometry">
      <rect>
-      <x>500</x>
-      <y>680</y>
-      <width>561</width>
+      <x>1520</x>
+      <y>520</y>
+      <width>351</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
-     <string>Сохранить всё</string>
+     <string>Сохранить и закрыть</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_5">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>680</y>
-      <width>501</width>
+      <x>1360</x>
+      <y>520</y>
+      <width>161</width>
       <height>24</height>
      </rect>
     </property>
@@ -692,8 +678,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1064</width>
-     <height>22</height>
+     <width>1903</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_4">

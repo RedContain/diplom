@@ -1,6 +1,6 @@
 import sys
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplicagittion, QMainWindow
 from python_files.LoadingWindow.ui_main import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):                                           # Инициализация класса

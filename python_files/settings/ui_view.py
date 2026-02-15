@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'View.ui'
+## Form generated from reading UI file 'view.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.1
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -85,7 +85,7 @@ class Ui_MainWindow(object):
 
         self.gridLayoutWidget_4 = QWidget(self.groupBox)
         self.gridLayoutWidget_4.setObjectName(u"gridLayoutWidget_4")
-        self.gridLayoutWidget_4.setGeometry(QRect(140, 60, 116, 41))
+        self.gridLayoutWidget_4.setGeometry(QRect(140, 60, 211, 41))
         self.gridLayout_4 = QGridLayout(self.gridLayoutWidget_4)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
@@ -289,7 +289,7 @@ class Ui_MainWindow(object):
 
         self.gridLayoutWidget_24 = QWidget(self.frame)
         self.gridLayoutWidget_24.setObjectName(u"gridLayoutWidget_24")
-        self.gridLayoutWidget_24.setGeometry(QRect(242, 150, 161, 51))
+        self.gridLayoutWidget_24.setGeometry(QRect(242, 150, 170, 51))
         self.gridLayout_25 = QGridLayout(self.gridLayoutWidget_24)
         self.gridLayout_25.setObjectName(u"gridLayout_25")
         self.gridLayout_25.setContentsMargins(0, 0, 0, 0)
@@ -398,7 +398,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1064, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1064, 33))
         self.menu_4 = QMenu(self.menuBar)
         self.menu_4.setObjectName(u"menu_4")
         self.menu_5 = QMenu(self.menuBar)
