@@ -65,6 +65,9 @@ class Ui_reportWindow(object):
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setEnabled(True)
         self.tabWidget.setGeometry(QRect(0, 30, 1901, 861))
+        self.tab_5 = QWidget()
+        self.tab_5.setObjectName(u"tab_5")
+        self.tabWidget.addTab(self.tab_5, "")
         self.tab = QWidget()
         self.tab.setObjectName(u"tab")
         self.groupBox = QGroupBox(self.tab)
@@ -658,7 +661,7 @@ class Ui_reportWindow(object):
 
         self.gridLayoutWidget_22 = QWidget(self.groupBox_11)
         self.gridLayoutWidget_22.setObjectName(u"gridLayoutWidget_22")
-        self.gridLayoutWidget_22.setGeometry(QRect(20, 418, 233, 60))
+        self.gridLayoutWidget_22.setGeometry(QRect(12, 418, 241, 60))
         self.gridLayout_22 = QGridLayout(self.gridLayoutWidget_22)
         self.gridLayout_22.setObjectName(u"gridLayout_22")
         self.gridLayout_22.setContentsMargins(0, 0, 0, 0)
@@ -684,7 +687,7 @@ class Ui_reportWindow(object):
 
         self.gridLayoutWidget_23 = QWidget(self.groupBox_11)
         self.gridLayoutWidget_23.setObjectName(u"gridLayoutWidget_23")
-        self.gridLayoutWidget_23.setGeometry(QRect(20, 475, 391, 291))
+        self.gridLayoutWidget_23.setGeometry(QRect(10, 485, 401, 281))
         self.gridLayout_23 = QGridLayout(self.gridLayoutWidget_23)
         self.gridLayout_23.setObjectName(u"gridLayout_23")
         self.gridLayout_23.setContentsMargins(0, 0, 0, 0)
@@ -778,7 +781,7 @@ class Ui_reportWindow(object):
 
         self.retranslateUi(reportWindow)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         self.tabWidget_2.setCurrentIndex(0)
 
 
@@ -805,6 +808,7 @@ class Ui_reportWindow(object):
 #if QT_CONFIG(tooltip)
         self.tabWidget.setToolTip(QCoreApplication.translate("reportWindow", u"<html><head/><body><p>\u0432</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), QCoreApplication.translate("reportWindow", u"\u0420\u0430\u0441\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0438\u0435", None))
         self.groupBox.setTitle(QCoreApplication.translate("reportWindow", u"\u041b\u0438\u0446\u043e, \u0437\u0430\u043f\u043e\u043b\u043d\u044f\u044e\u0449\u0438\u0435\u0435 \u043e\u0442\u0447\u0435\u0442:", None))
         self.label.setText(QCoreApplication.translate("reportWindow", u"\u0424\u0418\u041e:", None))
         self.label_2.setText(QCoreApplication.translate("reportWindow", u"\u0414\u043e\u043b\u0436\u043d\u043e\u0441\u0442\u044c:", None))
