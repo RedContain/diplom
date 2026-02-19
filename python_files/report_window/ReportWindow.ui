@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1902</width>
-    <height>935</height>
+    <width>1909</width>
+    <height>983</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,14 +23,14 @@
       <x>0</x>
       <y>30</y>
       <width>1901</width>
-      <height>861</height>
+      <height>911</height>
      </rect>
     </property>
     <property name="toolTip">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;в&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
@@ -96,7 +96,7 @@
         <x>10</x>
         <y>340</y>
         <width>391</width>
-        <height>111</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -133,51 +133,6 @@
         </item>
         <item row="0" column="1">
          <widget class="QComboBox" name="comboBox_14"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="gridLayoutWidget_28">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>80</y>
-         <width>371</width>
-         <height>26</height>
-        </rect>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_28">
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_57">
-          <property name="text">
-           <string>Этаж:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QSpinBox" name="spinBox_5">
-          <property name="maximumSize">
-           <size>
-            <width>51</width>
-            <height>22</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="text">
-           <string>Внешние помещения</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="autoRepeat">
-           <bool>false</bool>
-          </property>
-          <property name="tristate">
-           <bool>false</bool>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -305,7 +260,7 @@
         <x>410</x>
         <y>0</y>
         <width>1471</width>
-        <height>821</height>
+        <height>831</height>
        </rect>
       </property>
       <property name="title">
@@ -350,10 +305,10 @@
       <widget class="Line" name="line_2">
        <property name="geometry">
         <rect>
-         <x>310</x>
+         <x>330</x>
          <y>20</y>
-         <width>41</width>
-         <height>781</height>
+         <width>21</width>
+         <height>801</height>
         </rect>
        </property>
        <property name="orientation">
@@ -373,10 +328,10 @@
       <widget class="QTableView" name="tableView_2">
        <property name="geometry">
         <rect>
-         <x>860</x>
-         <y>30</y>
-         <width>601</width>
-         <height>781</height>
+         <x>350</x>
+         <y>20</y>
+         <width>351</width>
+         <height>801</height>
         </rect>
        </property>
       </widget>
@@ -458,16 +413,94 @@
       <widget class="QGroupBox" name="groupBox_15">
        <property name="geometry">
         <rect>
-         <x>340</x>
-         <y>20</y>
+         <x>710</x>
+         <y>10</y>
          <width>511</width>
-         <height>791</height>
+         <height>811</height>
         </rect>
        </property>
        <property name="title">
         <string>Выбор места:</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="pushButton_4">
+       <property name="geometry">
+        <rect>
+         <x>1230</x>
+         <y>20</y>
+         <width>231</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сохранить</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_6">
+       <property name="geometry">
+        <rect>
+         <x>1230</x>
+         <y>50</y>
+         <width>231</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Сбросить команту</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_7">
+       <property name="geometry">
+        <rect>
+         <x>1230</x>
+         <y>80</y>
+         <width>231</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Выгрузить отчетность:</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_8">
+      <property name="geometry">
+       <rect>
+        <x>410</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Сохранить всё</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_9">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Удалить всё</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_10">
+      <property name="geometry">
+       <rect>
+        <x>870</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Выгрузить финальную отчетность</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="tab">
@@ -754,7 +787,7 @@
         <x>10</x>
         <y>350</y>
         <width>391</width>
-        <height>111</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -791,51 +824,6 @@
         </item>
         <item row="0" column="1">
          <widget class="QComboBox" name="comboBox_4"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="gridLayoutWidget_12">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>80</y>
-         <width>371</width>
-         <height>26</height>
-        </rect>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_13">
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>Этаж:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="3">
-         <widget class="QSpinBox" name="spinBox">
-          <property name="maximumSize">
-           <size>
-            <width>51</width>
-            <height>22</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2">
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text">
-           <string>Внешние помещения</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="autoRepeat">
-           <bool>false</bool>
-          </property>
-          <property name="tristate">
-           <bool>false</bool>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -1030,6 +1018,58 @@
         </item>
        </layout>
       </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_11">
+      <property name="geometry">
+       <rect>
+        <x>420</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Печать отчетности по комнате</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_12">
+      <property name="geometry">
+       <rect>
+        <x>650</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>.txt</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_13">
+      <property name="geometry">
+       <rect>
+        <x>880</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>.pdf</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_14">
+      <property name="geometry">
+       <rect>
+        <x>1110</x>
+        <y>840</y>
+        <width>231</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Выгрузка полной отчетности</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
@@ -1690,7 +1730,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1902</width>
+     <width>1909</width>
      <height>33</height>
     </rect>
    </property>
@@ -1729,19 +1769,17 @@
      <string>Настройка окружения</string>
     </property>
     <addaction name="action_11"/>
-    <addaction name="action_12"/>
-    <addaction name="action_13"/>
    </widget>
-   <widget class="QMenu" name="menu_3">
+   <widget class="QMenu" name="menu_6">
     <property name="title">
-     <string>Главное меню</string>
+     <string>ОТКРЫТЬ СХЕМУ</string>
     </property>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_4"/>
    <addaction name="menu_5"/>
-   <addaction name="menu_3"/>
+   <addaction name="menu_6"/>
   </widget>
   <action name="action">
    <property name="text">
