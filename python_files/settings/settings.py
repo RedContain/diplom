@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMessageBox,
                                QListWidgetItem, QDialog, QVBoxLayout,
                                QTableWidget, QTableWidgetItem, QHeaderView,
                                QPushButton, QHBoxLayout, QFormLayout,
-                               QLineEdit, QSpinBox, QDateEdit)
+                               QLineEdit, QSpinBox, QDateEdit, QLabel, QDoubleSpinBox, QComboBox, QGroupBox,
+                               QGridLayout)
 from PySide6.QtCore import Qt, QDate
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QIODevice
@@ -123,20 +124,15 @@ class DatabaseHandler:
         cursor = conn.cursor()
 
         if branch_id:
-            try:
-                cursor.execute("""
-                               SELECT worker_id, name_id, job_title, report_count, date_of_work
-                               FROM employees WHERE branch_id = ?
-                               """, (branch_id,))
-            except sqlite3.OperationalError:
-                cursor.execute("""
-                               SELECT worker_id, name_id, job_title, report_count, date_of_work
-                               FROM employees
-                               """)
+            cursor.execute("""
+                           SELECT worker_id, name_id, job_title, report_count, date_of_work
+                           FROM employees WHERE branch_id = ?
+                           ORDER BY name_id
+                           """, (branch_id,))
         else:
             cursor.execute("""
                            SELECT worker_id, name_id, job_title, report_count, date_of_work
-                           FROM employees ORDER BY worker_id DESC
+                           FROM employees ORDER BY name_id
                            """)
 
         employees = cursor.fetchall()
@@ -147,18 +143,10 @@ class DatabaseHandler:
         """Добавление сотрудника"""
         conn = self.get_connection()
         cursor = conn.cursor()
-
-        try:
-            cursor.execute("""
-                           INSERT INTO employees (name_id, job_title, report_count, date_of_work, branch_id)
-                           VALUES (?, ?, ?, ?, ?)
-                           """, (name, job_title, 0, date_of_work, branch_id))
-        except sqlite3.OperationalError:
-            cursor.execute("""
-                           INSERT INTO employees (name_id, job_title, report_count, date_of_work)
-                           VALUES (?, ?, ?, ?)
-                           """, (name, job_title, 0, date_of_work))
-
+        cursor.execute("""
+                       INSERT INTO employees (name_id, job_title, report_count, date_of_work, branch_id)
+                       VALUES (?, ?, ?, ?, ?)
+                       """, (name, job_title, 0, date_of_work, branch_id))
         employee_id = cursor.lastrowid
         conn.commit()
         conn.close()
@@ -188,53 +176,122 @@ class DatabaseHandler:
         conn.close()
         return success
 
-    # ========== МЕТОДЫ ДЛЯ КОМНАТ ==========
+    # ========== 👇 ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ КОМНАТ ==========
     def get_rooms(self, branch_id=None):
-        """Получение комнат"""
+        """Получение всех комнат филиала"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
-        try:
-            if branch_id:
-                cursor.execute("""
-                               SELECT room_id, room_number, room_name
-                               FROM room WHERE branch_id = ?
-                               """, (branch_id,))
-            else:
-                cursor.execute("SELECT room_id, room_number, room_name FROM room")
-        except sqlite3.OperationalError:
-            cursor.execute("SELECT room_id, room_number, room_name FROM room")
+        if branch_id:
+            cursor.execute("""
+                           SELECT
+                               r.room_id,
+                               r.room_number,
+                               r.room_name,
+                               r.floor,
+                               r.capacity,
+                               r.desks_count,
+                               r.chairs_count,
+                               r.sockets_count,
+                               r.area,
+                               r.responsible_employee_id,
+                               r.notes,
+                               e.name_id as responsible_name
+                           FROM room r
+                                    LEFT JOIN employees e ON r.responsible_employee_id = e.worker_id
+                           WHERE r.branch_id = ?
+                           ORDER BY r.floor, r.room_number
+                           """, (branch_id,))
+        else:
+            cursor.execute("""
+                           SELECT
+                               r.room_id,
+                               r.room_number,
+                               r.room_name,
+                               r.floor,
+                               r.capacity,
+                               r.desks_count,
+                               r.chairs_count,
+                               r.sockets_count,
+                               r.area,
+                               r.responsible_employee_id,
+                               r.notes,
+                               e.name_id as responsible_name
+                           FROM room r
+                                    LEFT JOIN employees e ON r.responsible_employee_id = e.worker_id
+                           ORDER BY r.branch_id, r.floor, r.room_number
+                           """)
 
         rooms = cursor.fetchall()
         conn.close()
         return rooms
 
-    def add_room(self, room_number, room_name, branch_id=None):
-        """Добавление комнаты"""
+    def add_room(self, room_number, room_name, branch_id=None, floor=1,
+                 capacity=0, desks_count=0, chairs_count=0, sockets_count=0,
+                 area=0.0, responsible_id=None, notes=""):
+        """Добавление новой комнаты"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
-        try:
-            cursor.execute("""
-                           INSERT INTO room (room_number, room_name, branch_id)
-                           VALUES (?, ?, ?)
-                           """, (room_number, room_name, branch_id))
-        except sqlite3.OperationalError:
-            cursor.execute("""
-                           INSERT INTO room (room_number, room_name)
-                           VALUES (?, ?)
-                           """, (room_number, room_name))
+        cursor.execute("""
+                       INSERT INTO room (
+                           room_number, room_name, branch_id, floor,
+                           capacity, desks_count, chairs_count, sockets_count,
+                           area, responsible_employee_id, notes
+                       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                       """, (
+                           room_number, room_name, branch_id, floor,
+                           capacity, desks_count, chairs_count, sockets_count,
+                           area, responsible_id, notes
+                       ))
 
         room_id = cursor.lastrowid
         conn.commit()
         conn.close()
         return room_id
 
+    def update_room(self, room_id, room_number, room_name, floor=1,
+                    capacity=0, desks_count=0, chairs_count=0, sockets_count=0,
+                    area=0.0, responsible_id=None, notes=""):
+        """Обновление комнаты"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+                       UPDATE room SET
+                                       room_number = ?,
+                                       room_name = ?,
+                                       floor = ?,
+                                       capacity = ?,
+                                       desks_count = ?,
+                                       chairs_count = ?,
+                                       sockets_count = ?,
+                                       area = ?,
+                                       responsible_employee_id = ?,
+                                       notes = ?
+                       WHERE room_id = ?
+                       """, (
+                           room_number, room_name, floor,
+                           capacity, desks_count, chairs_count,
+                           sockets_count, area, responsible_id,
+                           notes, room_id
+                       ))
+
+        success = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+        return success
+
     def delete_room(self, room_id):
         """Удаление комнаты"""
         conn = self.get_connection()
         cursor = conn.cursor()
+
+        # Сначала обновляем оборудование
+        cursor.execute("UPDATE equipment SET room_id = NULL WHERE room_id = ?", (room_id,))
+        # Удаляем комнату
         cursor.execute("DELETE FROM room WHERE room_id = ?", (room_id,))
+
         success = cursor.rowcount > 0
         conn.commit()
         conn.close()
@@ -248,7 +305,7 @@ class DatabaseHandler:
         try:
             cursor.execute("SELECT username FROM users")
             users = cursor.fetchall()
-        except sqlite3.OperationalError:
+        except:
             users = []
         conn.close()
         return users
@@ -265,7 +322,6 @@ class DatabaseHandler:
             success = False
         conn.close()
         return success
-
 
 class EmployeesDialog(QDialog):
     """Диалог для управления сотрудниками"""
@@ -446,86 +502,341 @@ class EmployeesDialog(QDialog):
 
 
 class RoomsDialog(QDialog):
-    """Диалог для управления комнатами"""
+    """Диалог для управления комнатами с расширенной информацией"""
 
     def __init__(self, db, branch_id, branch_name, parent=None):
         super().__init__(parent)
         self.db = db
         self.branch_id = branch_id
+        self.selected_room_id = None
         self.setWindowTitle(f"Комнаты филиала: {branch_name}")
-        self.setMinimumSize(600, 500)
+        self.setMinimumSize(1100, 700)
+        self.resize(1200, 750)
 
         layout = QVBoxLayout(self)
 
-        # Таблица комнат
+        # ========== ТАБЛИЦА КОМНАТ ==========
         self.table = QTableWidget()
-        self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(["ID", "Номер", "Название"])
+        self.table.setColumnCount(10)
+        self.table.setHorizontalHeaderLabels([
+            "ID", "Номер", "Название", "Этаж", "Вместимость",
+            "Столов", "Стульев", "Розеток", "Площадь", "Ответственный"
+        ])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
+        self.table.cellClicked.connect(self.on_row_selected)
         layout.addWidget(self.table)
 
-        # Форма
-        form_layout = QFormLayout()
+        # ========== ФОРМА ДЛЯ ВВОДА ==========
+        form_group = QGroupBox("Характеристики комнаты")
+        form_layout = QGridLayout(form_group)
+
+        # Левая колонка
+        form_layout.addWidget(QLabel("Номер комнаты:"), 0, 0)
         self.number_edit = QLineEdit()
+        form_layout.addWidget(self.number_edit, 0, 1)
+
+        form_layout.addWidget(QLabel("Название:"), 1, 0)
         self.name_edit = QLineEdit()
+        form_layout.addWidget(self.name_edit, 1, 1)
 
-        form_layout.addRow("Номер комнаты:", self.number_edit)
-        form_layout.addRow("Название:", self.name_edit)
-        layout.addLayout(form_layout)
+        form_layout.addWidget(QLabel("Этаж:"), 2, 0)
+        self.floor_spin = QSpinBox()
+        self.floor_spin.setRange(1, 50)
+        form_layout.addWidget(self.floor_spin, 2, 1)
 
-        # Кнопки
+        form_layout.addWidget(QLabel("Вместимость (чел):"), 3, 0)
+        self.capacity_spin = QSpinBox()
+        self.capacity_spin.setRange(0, 200)
+        self.capacity_spin.setSuffix(" чел")
+        form_layout.addWidget(self.capacity_spin, 3, 1)
+
+        # Правая колонка
+        form_layout.addWidget(QLabel("Количество столов:"), 0, 2)
+        self.desks_spin = QSpinBox()
+        self.desks_spin.setRange(0, 100)
+        self.desks_spin.setSuffix(" шт")
+        form_layout.addWidget(self.desks_spin, 0, 3)
+
+        form_layout.addWidget(QLabel("Количество стульев:"), 1, 2)
+        self.chairs_spin = QSpinBox()
+        self.chairs_spin.setRange(0, 200)
+        self.chairs_spin.setSuffix(" шт")
+        form_layout.addWidget(self.chairs_spin, 1, 3)
+
+        form_layout.addWidget(QLabel("Количество розеток:"), 2, 2)
+        self.sockets_spin = QSpinBox()
+        self.sockets_spin.setRange(0, 50)
+        self.sockets_spin.setSuffix(" шт")
+        form_layout.addWidget(self.sockets_spin, 2, 3)
+
+        form_layout.addWidget(QLabel("Площадь (м²):"), 3, 2)
+        self.area_spin = QDoubleSpinBox()
+        self.area_spin.setRange(0, 1000)
+        self.area_spin.setSuffix(" м²")
+        self.area_spin.setSingleStep(0.5)
+        form_layout.addWidget(self.area_spin, 3, 3)
+
+        # Нижняя строка - ответственный и примечания
+        form_layout.addWidget(QLabel("Ответственный сотрудник:"), 4, 0)
+        self.responsible_combo = QComboBox()
+        self.responsible_combo.addItem("Не назначен", None)
+        self.load_responsible_employees()
+        form_layout.addWidget(self.responsible_combo, 4, 1, 1, 3)
+
+        form_layout.addWidget(QLabel("Примечания:"), 5, 0)
+        self.notes_edit = QLineEdit()
+        self.notes_edit.setPlaceholderText("Дополнительная информация о комнате...")
+        form_layout.addWidget(self.notes_edit, 5, 1, 1, 3)
+
+        layout.addWidget(form_group)
+
+        # ========== КНОПКИ ==========
         btn_layout = QHBoxLayout()
-        add_btn = QPushButton("➕ Добавить")
-        add_btn.clicked.connect(self.add_room)
-        delete_btn = QPushButton("🗑️ Удалить")
-        delete_btn.clicked.connect(self.delete_room)
+
+        self.add_btn = QPushButton("➕ Добавить")
+        self.add_btn.clicked.connect(self.add_room)
+
+        self.update_btn = QPushButton("✏️ Обновить")
+        self.update_btn.clicked.connect(self.update_room)
+        self.update_btn.setEnabled(False)
+
+        self.delete_btn = QPushButton("🗑️ Удалить")
+        self.delete_btn.clicked.connect(self.delete_room)
+        self.delete_btn.setEnabled(False)
+
         close_btn = QPushButton("❌ Закрыть")
         close_btn.clicked.connect(self.accept)
 
-        btn_layout.addWidget(add_btn)
-        btn_layout.addWidget(delete_btn)
+        btn_layout.addWidget(self.add_btn)
+        btn_layout.addWidget(self.update_btn)
+        btn_layout.addWidget(self.delete_btn)
         btn_layout.addWidget(close_btn)
         layout.addLayout(btn_layout)
 
+        # Загружаем данные
         self.load_rooms()
 
-    def load_rooms(self):
-        """Загрузка комнат"""
-        rooms = self.db.get_rooms(self.branch_id)
-        self.table.setRowCount(len(rooms))
+    def load_responsible_employees(self):
+        """Загрузка списка сотрудников для выбора ответственного"""
+        try:
+            employees = self.db.get_employees(self.branch_id)
+            for emp in employees:
+                # emp: (worker_id, name_id, job_title, report_count, date_of_work)
+                self.responsible_combo.addItem(f"{emp[1]} ({emp[2]})", emp[0])
+        except Exception as e:
+            print(f"Ошибка загрузки сотрудников: {e}")
 
-        for i, room in enumerate(rooms):
-            self.table.setItem(i, 0, QTableWidgetItem(str(room[0])))
-            self.table.setItem(i, 1, QTableWidgetItem(room[1]))
-            self.table.setItem(i, 2, QTableWidgetItem(room[2]))
+    def load_rooms(self):
+        """Загрузка комнат в таблицу"""
+        try:
+            rooms = self.db.get_rooms(self.branch_id)
+
+            self.table.setRowCount(len(rooms))
+
+            for i, room in enumerate(rooms):
+                # room: (room_id, room_number, room_name, floor, capacity,
+                #        desks_count, chairs_count, sockets_count, area,
+                #        responsible_id, notes, responsible_name)
+
+                self.table.setItem(i, 0, QTableWidgetItem(str(room[0])))  # ID
+                self.table.setItem(i, 1, QTableWidgetItem(room[1] or ""))  # Номер
+                self.table.setItem(i, 2, QTableWidgetItem(room[2] or ""))  # Название
+                self.table.setItem(i, 3, QTableWidgetItem(str(room[3] or "1")))  # Этаж
+                self.table.setItem(i, 4, QTableWidgetItem(str(room[4] or "0")))  # Вместимость
+                self.table.setItem(i, 5, QTableWidgetItem(str(room[5] or "0")))  # Столов
+                self.table.setItem(i, 6, QTableWidgetItem(str(room[6] or "0")))  # Стульев
+                self.table.setItem(i, 7, QTableWidgetItem(str(room[7] or "0")))  # Розеток
+                self.table.setItem(i, 8, QTableWidgetItem(str(room[8] or "0.0")))  # Площадь
+
+                # Ответственный
+                responsible_name = room[11] if len(room) > 11 and room[11] else "Не назначен"
+                self.table.setItem(i, 9, QTableWidgetItem(responsible_name))
+
+        except Exception as e:
+            print(f"Ошибка загрузки комнат: {e}")
+
+    def on_row_selected(self, row, column):
+        """Выбор строки в таблице"""
+        id_item = self.table.item(row, 0)
+        if id_item:
+            self.selected_room_id = int(id_item.text())
+
+            # Загружаем данные в форму
+            self.number_edit.setText(self.table.item(row, 1).text() or "")
+            self.name_edit.setText(self.table.item(row, 2).text() or "")
+            self.floor_spin.setValue(int(self.table.item(row, 3).text() or "1"))
+            self.capacity_spin.setValue(int(self.table.item(row, 4).text() or "0"))
+            self.desks_spin.setValue(int(self.table.item(row, 5).text() or "0"))
+            self.chairs_spin.setValue(int(self.table.item(row, 6).text() or "0"))
+            self.sockets_spin.setValue(int(self.table.item(row, 7).text() or "0"))
+            self.area_spin.setValue(float(self.table.item(row, 8).text() or "0.0"))
+
+            # Ответственный
+            responsible_text = self.table.item(row, 9).text()
+            for idx in range(self.responsible_combo.count()):
+                if self.responsible_combo.itemText(idx) == responsible_text:
+                    self.responsible_combo.setCurrentIndex(idx)
+                    break
+
+            # Активируем кнопки
+            self.update_btn.setEnabled(True)
+            self.delete_btn.setEnabled(True)
+            self.add_btn.setText("➕ Добавить (новую)")
+
+    def get_form_data(self):
+        """Получение данных из формы"""
+        return {
+            'room_number': self.number_edit.text().strip(),
+            'room_name': self.name_edit.text().strip(),
+            'floor': self.floor_spin.value(),
+            'capacity': self.capacity_spin.value(),
+            'desks_count': self.desks_spin.value(),
+            'chairs_count': self.chairs_spin.value(),
+            'sockets_count': self.sockets_spin.value(),
+            'area': self.area_spin.value(),
+            'responsible_id': self.responsible_combo.currentData(),
+            'notes': self.notes_edit.text().strip()
+        }
 
     def add_room(self):
-        """Добавление комнаты"""
-        number = self.number_edit.text().strip()
-        name = self.name_edit.text().strip()
+        """Добавление новой комнаты"""
+        data = self.get_form_data()
 
-        if not number or not name:
+        if not data['room_number'] or not data['room_name']:
             QMessageBox.warning(self, "Ошибка", "Заполните номер и название комнаты")
             return
 
-        self.db.add_room(number, name, self.branch_id)
-        self.load_rooms()
-        self.number_edit.clear()
-        self.name_edit.clear()
+        try:
+            room_id = self.db.add_room(
+                room_number=data['room_number'],
+                room_name=data['room_name'],
+                branch_id=self.branch_id,
+                floor=data['floor'],
+                capacity=data['capacity'],
+                desks_count=data['desks_count'],
+                chairs_count=data['chairs_count'],
+                sockets_count=data['sockets_count'],
+                area=data['area'],
+                responsible_id=data['responsible_id'],
+                notes=data['notes']
+            )
+
+            QMessageBox.information(self, "Успех", f"Комната добавлена с ID: {room_id}")
+
+            # Очищаем форму
+            self.number_edit.clear()
+            self.name_edit.clear()
+            self.floor_spin.setValue(1)
+            self.capacity_spin.setValue(0)
+            self.desks_spin.setValue(0)
+            self.chairs_spin.setValue(0)
+            self.sockets_spin.setValue(0)
+            self.area_spin.setValue(0.0)
+            self.responsible_combo.setCurrentIndex(0)
+            self.notes_edit.clear()
+
+            self.load_rooms()
+
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось добавить комнату: {e}")
+
+    def update_room(self):
+        """Обновление комнаты"""
+        if not self.selected_room_id:
+            return
+
+        data = self.get_form_data()
+
+        if not data['room_number'] or not data['room_name']:
+            QMessageBox.warning(self, "Ошибка", "Заполните номер и название комнаты")
+            return
+
+        try:
+            success = self.db.update_room(
+                room_id=self.selected_room_id,
+                room_number=data['room_number'],
+                room_name=data['room_name'],
+                floor=data['floor'],
+                capacity=data['capacity'],
+                desks_count=data['desks_count'],
+                chairs_count=data['chairs_count'],
+                sockets_count=data['sockets_count'],
+                area=data['area'],
+                responsible_id=data['responsible_id'],
+                notes=data['notes']
+            )
+
+            if success:
+                QMessageBox.information(self, "Успех", "Комната обновлена")
+
+                # Сбрасываем выделение
+                self.selected_room_id = None
+                self.update_btn.setEnabled(False)
+                self.delete_btn.setEnabled(False)
+                self.add_btn.setText("➕ Добавить")
+
+                # Очищаем форму
+                self.number_edit.clear()
+                self.name_edit.clear()
+                self.floor_spin.setValue(1)
+                self.capacity_spin.setValue(0)
+                self.desks_spin.setValue(0)
+                self.chairs_spin.setValue(0)
+                self.sockets_spin.setValue(0)
+                self.area_spin.setValue(0.0)
+                self.responsible_combo.setCurrentIndex(0)
+                self.notes_edit.clear()
+
+                self.load_rooms()
+            else:
+                QMessageBox.warning(self, "Ошибка", "Не удалось обновить комнату")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось обновить комнату: {e}")
 
     def delete_room(self):
         """Удаление комнаты"""
-        row = self.table.currentRow()
-        if row >= 0:
-            room_id = int(self.table.item(row, 0).text())
+        if not self.selected_room_id:
+            return
 
-            reply = QMessageBox.question(self, "Подтверждение",
-                                         "Удалить комнату?",
-                                         QMessageBox.Yes | QMessageBox.No)
+        reply = QMessageBox.question(
+            self, "Подтверждение",
+            "Удалить комнату? Все связанные данные (оборудование) будут потеряны.",
+            QMessageBox.Yes | QMessageBox.No
+        )
 
-            if reply == QMessageBox.Yes:
-                self.db.delete_room(room_id)
-                self.load_rooms()
+        if reply == QMessageBox.Yes:
+            try:
+                success = self.db.delete_room(self.selected_room_id)
+
+                if success:
+                    QMessageBox.information(self, "Успех", "Комната удалена")
+
+                    self.selected_room_id = None
+                    self.update_btn.setEnabled(False)
+                    self.delete_btn.setEnabled(False)
+                    self.add_btn.setText("➕ Добавить")
+
+                    # Очищаем форму
+                    self.number_edit.clear()
+                    self.name_edit.clear()
+                    self.floor_spin.setValue(1)
+                    self.capacity_spin.setValue(0)
+                    self.desks_spin.setValue(0)
+                    self.chairs_spin.setValue(0)
+                    self.sockets_spin.setValue(0)
+                    self.area_spin.setValue(0.0)
+                    self.responsible_combo.setCurrentIndex(0)
+                    self.notes_edit.clear()
+
+                    self.load_rooms()
+                else:
+                    QMessageBox.warning(self, "Ошибка", "Не удалось удалить комнату")
+
+            except Exception as e:
+                QMessageBox.critical(self, "Ошибка", f"Не удалось удалить комнату: {e}")
 
 
 class MainWindow(QMainWindow):

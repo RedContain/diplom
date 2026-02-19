@@ -3,25 +3,22 @@ import sqlite3
 
 class DatabaseHandler:
     def __init__(self, db_path="database/company.db"):
-        # Создаем папку, если её нет
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.db_path = db_path
-        print(f"🔄 Создание/подключение к БД: {db_path}")
+        print(f"🔄 Подключение к БД: {db_path}")
         self.create_tables()
 
     def get_connection(self):
-        """Получение соединения с БД"""
         conn = sqlite3.connect(self.db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         conn.row_factory = sqlite3.Row
         return conn
 
     def create_tables(self):
-        """Создание всех таблиц"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
-        # 1️⃣ Таблица филиалов
+        # Таблица филиалов
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS branches (
                                                                branch_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +28,7 @@ class DatabaseHandler:
                        )
                        ''')
 
-        # 2️⃣ Таблица сотрудников (связь с филиалом)
+        # Таблица сотрудников
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS employees (
                                                                 worker_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +43,7 @@ class DatabaseHandler:
                            )
                        ''')
 
-        # 3️⃣ Таблица окружения
+        # Таблица окружения
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS environment (
                                                                   environment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,7 +53,7 @@ class DatabaseHandler:
                            )
                        ''')
 
-        # ========== 👇 ГЛАВНОЕ: ОБНОВЛЕННАЯ ТАБЛИЦА room ==========
+        # ========== ГЛАВНОЕ: ПОЛНАЯ ТАБЛИЦА room ==========
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS room (
                                                            room_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,19 +61,19 @@ class DatabaseHandler:
                                                            room_name TEXT NOT NULL,
                                                            branch_id INTEGER,
                                                            floor INTEGER DEFAULT 1,
-                                                           capacity INTEGER DEFAULT 0,           -- Сколько человек может сидеть
-                                                           desks_count INTEGER DEFAULT 0,        -- Количество столов
-                                                           chairs_count INTEGER DEFAULT 0,       -- Количество стульев
-                                                           sockets_count INTEGER DEFAULT 0,      -- Количество розеток
-                                                           area REAL DEFAULT 0.0,                -- Площадь в м²
-                                                           responsible_employee_id INTEGER,      -- ID ответственного сотрудника
-                                                           notes TEXT DEFAULT '',                -- Дополнительные заметки
+                                                           capacity INTEGER DEFAULT 0,
+                                                           desks_count INTEGER DEFAULT 0,
+                                                           chairs_count INTEGER DEFAULT 0,
+                                                           sockets_count INTEGER DEFAULT 0,
+                                                           area REAL DEFAULT 0.0,
+                                                           responsible_employee_id INTEGER,
+                                                           notes TEXT DEFAULT '',
                                                            FOREIGN KEY (branch_id) REFERENCES branches(branch_id) ON DELETE CASCADE,
                            FOREIGN KEY (responsible_employee_id) REFERENCES employees(worker_id) ON DELETE SET NULL
                            )
                        ''')
 
-        # 4️⃣ Таблица оборудования (связь с комнатой)
+        # Таблица оборудования
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS equipment (
                                                                 equipment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +97,7 @@ class DatabaseHandler:
                            )
                        ''')
 
-        # 5️⃣ Таблица отчетов
+        # Таблица отчетов
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS reports (
                                                               report_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,7 +114,7 @@ class DatabaseHandler:
                            )
                        ''')
 
-        # 6️⃣ Таблица лога инвентаризации
+        # Таблица лога инвентаризации
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS inventory_log (
                                                                     log_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -134,7 +131,7 @@ class DatabaseHandler:
                            )
                        ''')
 
-        # 7️⃣ Таблица пользователей
+        # Таблица пользователей
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS users (
                                                             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,7 +141,7 @@ class DatabaseHandler:
                        )
                        ''')
 
-        # 8️⃣ Таблица компании (для названия предприятия)
+        # Таблица компании
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS company (
                                                               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,115 +149,32 @@ class DatabaseHandler:
                        )
                        ''')
 
-        # Добавляем тестовые данные, если таблицы пустые
-        self.add_test_data(cursor)
-
         conn.commit()
         conn.close()
-        print("✅ База данных успешно создана/обновлена!")
+        print("✅ База данных создана/обновлена!")
 
-    def add_test_data(self, cursor):
-        """Добавление тестовых данных"""
-        # Проверяем и добавляем филиалы
-        cursor.execute("SELECT COUNT(*) FROM branches")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute(
-                "INSERT INTO branches (name, floors_count, address) VALUES (?, ?, ?)",
-                ("Главный корпус", 5, "ул. Ленина, 1")
-            )
-            cursor.execute(
-                "INSERT INTO branches (name, floors_count, address) VALUES (?, ?, ?)",
-                ("Поликлиника №1", 3, "ул. Мира, 10")
-            )
-            print("  ✅ Добавлены тестовые филиалы")
-
-        # Проверяем и добавляем сотрудников
-        cursor.execute("SELECT COUNT(*) FROM employees")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("""
-                           INSERT INTO employees (name_id, job_title, report_count, date_of_work, branch_id)
-                           VALUES (?, ?, ?, ?, ?)
-                           """, ("Иванов Иван Иванович", "Заведующий отделением", 0, "2020-01-15", 1))
-
-            cursor.execute("""
-                           INSERT INTO employees (name_id, job_title, report_count, date_of_work, branch_id)
-                           VALUES (?, ?, ?, ?, ?)
-                           """, ("Петров Петр Петрович", "Старший лаборант", 0, "2021-03-20", 1))
-
-            cursor.execute("""
-                           INSERT INTO employees (name_id, job_title, report_count, date_of_work, branch_id)
-                           VALUES (?, ?, ?, ?, ?)
-                           """, ("Сидорова Анна Сергеевна", "Медсестра", 0, "2022-05-10", 2))
-            print("  ✅ Добавлены тестовые сотрудники")
-
-        # Проверяем и добавляем комнаты
-        cursor.execute("SELECT COUNT(*) FROM room")
-        if cursor.fetchone()[0] == 0:
-            # Комнаты для главного корпуса
-            cursor.execute("""
-                           INSERT INTO room (
-                               room_number, room_name, branch_id, floor, capacity,
-                               desks_count, chairs_count, sockets_count, area,
-                               responsible_employee_id, notes
-                           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                           """, ("101", "Кабинет заведующего", 1, 1, 5, 2, 5, 4, 25.5, 1, "Угловой кабинет"))
-
-            cursor.execute("""
-                           INSERT INTO room (
-                               room_number, room_name, branch_id, floor, capacity,
-                               desks_count, chairs_count, sockets_count, area, notes
-                           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                           """, ("102", "Процедурная", 1, 1, 8, 1, 8, 6, 30.0, "Требуется ремонт"))
-
-            cursor.execute("""
-                           INSERT INTO room (
-                               room_number, room_name, branch_id, floor, capacity,
-                               desks_count, chairs_count, sockets_count, area
-                           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                           """, ("201", "Палата №1", 1, 2, 4, 4, 4, 2, 20.0))
-
-            # Комнаты для поликлиники
-            cursor.execute("""
-                           INSERT INTO room (
-                               room_number, room_name, branch_id, floor, capacity,
-                               desks_count, chairs_count, sockets_count, area
-                           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                           """, ("1", "Кабинет терапевта", 2, 1, 6, 2, 6, 4, 22.0))
-
-            print("  ✅ Добавлены тестовые комнаты")
-
-        # Добавляем пользователя admin
-        cursor.execute("SELECT COUNT(*) FROM users")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute(
-                "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                ('admin', 'admin', 'admin')
-            )
-            print("  ✅ Добавлен пользователь admin")
-
-        # Добавляем компанию
-        cursor.execute("SELECT COUNT(*) FROM company")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute(
-                "INSERT INTO company (name) VALUES (?)",
-                ("ГБОУ Больница 2 г. Апшеронск",)
-            )
-            print("  ✅ Добавлено название предприятия")
-
-    # ========== МЕТОДЫ ДЛЯ КОМНАТ (ОБНОВЛЕННЫЕ) ==========
+    # ========== МЕТОДЫ ДЛЯ КОМНАТ ==========
 
     def get_rooms(self, branch_id=None):
-        """Получение комнат с полной информацией"""
+        """Получение всех комнат филиала"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
         if branch_id:
             cursor.execute("""
                            SELECT
-                               r.room_id, r.room_number, r.room_name, r.floor,
-                               r.capacity, r.desks_count, r.chairs_count,
-                               r.sockets_count, r.area, r.responsible_employee_id,
-                               r.notes, e.name_id as responsible_name
+                               r.room_id,
+                               r.room_number,
+                               r.room_name,
+                               r.floor,
+                               r.capacity,
+                               r.desks_count,
+                               r.chairs_count,
+                               r.sockets_count,
+                               r.area,
+                               r.responsible_employee_id,
+                               r.notes,
+                               e.name_id as responsible_name
                            FROM room r
                                     LEFT JOIN employees e ON r.responsible_employee_id = e.worker_id
                            WHERE r.branch_id = ?
@@ -269,10 +183,18 @@ class DatabaseHandler:
         else:
             cursor.execute("""
                            SELECT
-                               r.room_id, r.room_number, r.room_name, r.floor,
-                               r.capacity, r.desks_count, r.chairs_count,
-                               r.sockets_count, r.area, r.responsible_employee_id,
-                               r.notes, e.name_id as responsible_name
+                               r.room_id,
+                               r.room_number,
+                               r.room_name,
+                               r.floor,
+                               r.capacity,
+                               r.desks_count,
+                               r.chairs_count,
+                               r.sockets_count,
+                               r.area,
+                               r.responsible_employee_id,
+                               r.notes,
+                               e.name_id as responsible_name
                            FROM room r
                                     LEFT JOIN employees e ON r.responsible_employee_id = e.worker_id
                            ORDER BY r.branch_id, r.floor, r.room_number
@@ -285,7 +207,7 @@ class DatabaseHandler:
     def add_room(self, room_number, room_name, branch_id=None, floor=1,
                  capacity=0, desks_count=0, chairs_count=0, sockets_count=0,
                  area=0.0, responsible_id=None, notes=""):
-        """Добавление комнаты со всеми параметрами"""
+        """Добавление новой комнаты"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -315,9 +237,15 @@ class DatabaseHandler:
 
         cursor.execute("""
                        UPDATE room SET
-                                       room_number = ?, room_name = ?, floor = ?,
-                                       capacity = ?, desks_count = ?, chairs_count = ?,
-                                       sockets_count = ?, area = ?, responsible_employee_id = ?,
+                                       room_number = ?,
+                                       room_name = ?,
+                                       floor = ?,
+                                       capacity = ?,
+                                       desks_count = ?,
+                                       chairs_count = ?,
+                                       sockets_count = ?,
+                                       area = ?,
+                                       responsible_employee_id = ?,
                                        notes = ?
                        WHERE room_id = ?
                        """, (
@@ -337,7 +265,7 @@ class DatabaseHandler:
         conn = self.get_connection()
         cursor = conn.cursor()
 
-        # Сначала обновляем оборудование (снимаем привязку к комнате)
+        # Сначала обновляем оборудование
         cursor.execute("UPDATE equipment SET room_id = NULL WHERE room_id = ?", (room_id,))
         # Удаляем комнату
         cursor.execute("DELETE FROM room WHERE room_id = ?", (room_id,))
@@ -354,10 +282,19 @@ class DatabaseHandler:
 
         cursor.execute("""
                        SELECT
-                           r.room_id, r.room_number, r.room_name, r.floor,
-                           r.capacity, r.desks_count, r.chairs_count,
-                           r.sockets_count, r.area, r.responsible_employee_id,
-                           r.notes, e.name_id as responsible_name, r.branch_id
+                           r.room_id,
+                           r.room_number,
+                           r.room_name,
+                           r.floor,
+                           r.capacity,
+                           r.desks_count,
+                           r.chairs_count,
+                           r.sockets_count,
+                           r.area,
+                           r.responsible_employee_id,
+                           r.notes,
+                           e.name_id as responsible_name,
+                           r.branch_id
                        FROM room r
                                 LEFT JOIN employees e ON r.responsible_employee_id = e.worker_id
                        WHERE r.room_id = ?
@@ -367,40 +304,177 @@ class DatabaseHandler:
         conn.close()
         return room
 
+    # ========== МЕТОДЫ ДЛЯ ФИЛИАЛОВ ==========
+
+    def get_all_branches(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT branch_id, name, floors_count, address FROM branches")
+        branches = cursor.fetchall()
+        conn.close()
+        return branches
+
+    def get_branch(self, branch_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT branch_id, name, floors_count, address FROM branches WHERE branch_id = ?", (branch_id,))
+        branch = cursor.fetchone()
+        conn.close()
+        return branch
+
+    def add_branch(self, name, floors_count=1, address=''):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO branches (name, floors_count, address) VALUES (?, ?, ?)",
+                       (name, floors_count, address))
+        branch_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return branch_id
+
+    def update_branch(self, branch_id, name, floors_count, address):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE branches SET name = ?, floors_count = ?, address = ? WHERE branch_id = ?",
+                       (name, floors_count, address, branch_id))
+        conn.commit()
+        conn.close()
+
+    def delete_branch(self, branch_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM branches WHERE branch_id = ?", (branch_id,))
+        conn.commit()
+        conn.close()
+
+    # ========== МЕТОДЫ ДЛЯ СОТРУДНИКОВ ==========
+
+    def get_employees(self, branch_id=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        if branch_id:
+            cursor.execute("""
+                           SELECT worker_id, name_id, job_title, report_count, date_of_work
+                           FROM employees WHERE branch_id = ?
+                           ORDER BY name_id
+                           """, (branch_id,))
+        else:
+            cursor.execute("""
+                           SELECT worker_id, name_id, job_title, report_count, date_of_work
+                           FROM employees ORDER BY name_id
+                           """)
+
+        employees = cursor.fetchall()
+        conn.close()
+        return employees
+
+    def add_employee(self, name, job_title, date_of_work, branch_id=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+                       INSERT INTO employees (name_id, job_title, report_count, date_of_work, branch_id)
+                       VALUES (?, ?, ?, ?, ?)
+                       """, (name, job_title, 0, date_of_work, branch_id))
+
+        employee_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return employee_id
+
+    def update_employee(self, worker_id, name, job_title, date_of_work):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+                       UPDATE employees
+                       SET name_id = ?, job_title = ?, date_of_work = ?
+                       WHERE worker_id = ?
+                       """, (name, job_title, date_of_work, worker_id))
+        success = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+        return success
+
+    def delete_employee(self, employee_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM employees WHERE worker_id = ?", (employee_id,))
+        success = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+        return success
+
+    # ========== МЕТОДЫ ДЛЯ ПОЛЬЗОВАТЕЛЕЙ ==========
+
+    def get_users(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT username FROM users")
+            users = cursor.fetchall()
+        except:
+            users = []
+        conn.close()
+        return users
+
+    def change_password(self, username, new_password):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+            conn.commit()
+            success = True
+        except:
+            success = False
+        conn.close()
+        return success
+
+    # ========== МЕТОДЫ ДЛЯ КОМПАНИИ ==========
+
+    def get_company_name(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT name FROM company LIMIT 1")
+            result = cursor.fetchone()
+            conn.close()
+            return result[0] if result else "ГБОУ Больница 2 г. Апшеронск"
+        except:
+            conn.close()
+            return "ГБОУ Больница 2 г. Апшеронск"
+
+    def save_company_name(self, name):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM company")
+            cursor.execute("INSERT INTO company (name) VALUES (?)", (name,))
+            conn.commit()
+        except Exception as e:
+            print(f"Ошибка сохранения названия: {e}")
+        finally:
+            conn.close()
+
 
 if __name__ == "__main__":
     db = DatabaseHandler()
-    print("\n🔍 Проверка создания БД:")
+    print("\n✅ DatabaseHandler готов к работе!")
 
-    # Проверяем, создались ли таблицы
+    # Проверка создания таблиц
     conn = db.get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
-    print("\nСозданные таблицы:")
+    print("\n📊 Таблицы в БД:")
     for table in tables:
-        # Проверяем структуру таблицы room
-        if table[0] == 'room':
-            cursor.execute("PRAGMA table_info(room)")
-            columns = cursor.fetchall()
-            print(f"  📋 Таблица '{table[0]}' имеет колонки:")
-            for col in columns:
-                print(f"     - {col[1]}: {col[2]}")
-        else:
-            print(f"  - {table[0]}")
+        print(f"  - {table[0]}")
 
-    # Показываем тестовые данные
-    print("\n📊 Тестовые данные:")
-
-    rooms = db.get_rooms(1)
-    print(f"  Комнат в филиале 1: {len(rooms)}")
-    if rooms:
-        print("  Первая комната:")
-        room = rooms[0]
-        print(f"    Номер: {room[1]}, Название: {room[2]}, Этаж: {room[3]}")
-        print(f"    Вместимость: {room[4]} чел, Столов: {room[5]}, Стульев: {room[6]}")
-        print(f"    Розеток: {room[7]}, Площадь: {room[8]} м²")
-        print(f"    Ответственный: {room[11] if len(room) > 11 else 'Не назначен'}")
+    # Проверка структуры комнат
+    cursor.execute("PRAGMA table_info(room)")
+    columns = cursor.fetchall()
+    print("\n🏢 Структура таблицы room:")
+    for col in columns:
+        print(f"  - {col[1]}: {col[2]}")
 
     conn.close()
-    print("\n✅ Готово! Файл company.db создан и заполнен тестовыми данными.")
