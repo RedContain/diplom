@@ -55,7 +55,7 @@ class DatabaseHandler:
                            )
                        ''')
 
-        # ========== ГЛАВНОЕ: ПОЛНАЯ ТАБЛИЦА room ==========
+        # Таблица комнат
         cursor.execute('''
                        CREATE TABLE IF NOT EXISTS room (
                                                            room_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,7 +83,7 @@ class DatabaseHandler:
                                                                 category TEXT NOT NULL,
                                                                 type TEXT NOT NULL,
                                                                 name TEXT NOT NULL,
-                                                                date_incoming INTEGER NOT NULL,
+                                                                date_incoming TEXT NOT NULL,
                                                                 state_incoming INTEGER NOT NULL,
                                                                 serial_number TEXT NOT NULL UNIQUE,
                                                                 supplier TEXT NOT NULL,
@@ -205,6 +205,25 @@ class DatabaseHandler:
         rooms = cursor.fetchall()
         conn.close()
         return rooms
+
+    def get_rooms_by_branch_and_floor(self, branch_id, floor):
+        """Получение комнат филиала по этажу"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           SELECT room_id, room_number, room_name, capacity
+                           FROM room
+                           WHERE branch_id = ? AND floor = ?
+                           ORDER BY room_number
+                           """, (branch_id, floor))
+            rooms = cursor.fetchall()
+            return rooms
+        except Exception as e:
+            print(f"Ошибка загрузки комнат: {e}")
+            return []
+        finally:
+            conn.close()
 
     def add_room(self, room_number, room_name, branch_id=None, floor=1,
                  capacity=0, desks_count=0, chairs_count=0, sockets_count=0,
@@ -458,24 +477,115 @@ class DatabaseHandler:
         finally:
             conn.close()
 
+    # ========== МЕТОДЫ ДЛЯ ОБОРУДОВАНИЯ ==========
+
+    def get_all_equipment(self):
+        """Получение всего оборудования"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           SELECT equipment_id, name, category, type, serial_number, status
+                           FROM equipment
+                           ORDER BY name
+                           """)
+            equipment = cursor.fetchall()
+            return equipment
+        except Exception as e:
+            print(f"Ошибка загрузки оборудования: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def get_equipment_by_room(self, room_id):
+        """Получение оборудования по комнате"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           SELECT equipment_id, name, category, type, serial_number, status
+                           FROM equipment
+                           WHERE room_id = ?
+                           ORDER BY name
+                           """, (room_id,))
+            equipment = cursor.fetchall()
+            return equipment
+        except Exception as e:
+            print(f"Ошибка загрузки оборудования: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def add_equipment(self, data):
+        """Добавление нового оборудования"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           INSERT INTO equipment (
+                               name, category, type, quantity, serial_number,
+                               supplier, price, date_incoming, state_incoming,
+                               phone_supplier, email_supplier, status, notes
+                           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           """, (
+                               data.get('name', ''),
+                               data.get('category', ''),
+                               data.get('type', ''),
+                               data.get('quantity', 1),
+                               data.get('serial_number', ''),
+                               data.get('supplier', ''),
+                               data.get('price', 0),
+                               data.get('date_incoming', datetime.now().strftime("%Y-%m-%d")),
+                               data.get('state_incoming', 1),
+                               data.get('phone_supplier', ''),
+                               data.get('email_supplier', ''),
+                               data.get('status', 'in_use'),
+                               data.get('notes', '')
+                           ))
+            equip_id = cursor.lastrowid
+            conn.commit()
+            return equip_id
+        except Exception as e:
+            print(f"Ошибка добавления оборудования: {e}")
+            return None
+        finally:
+            conn.close()
+
+    def update_equipment_room(self, equipment_id, room_id):
+        """Обновление комнаты оборудования"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("UPDATE equipment SET room_id = ? WHERE equipment_id = ?",
+                           (room_id, equipment_id))
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"Ошибка обновления оборудования: {e}")
+            return False
+        finally:
+            conn.close()
+
+    # ========== МЕТОДЫ ДЛЯ ОТЧЕТОВ ==========
+
     def add_report(self, report_data):
         """Добавление нового отчета"""
         conn = self.get_connection()
         cursor = conn.cursor()
         try:
             cursor.execute("""
-                       INSERT INTO reports (
-                           report_name, report_date, description, order_number,
-                           worker_id, environment_id
-                       ) VALUES (?, ?, ?, ?, ?, ?)
-                       """, (
-                           report_data.get('name', ''),
-                           report_data.get('date', datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                           report_data.get('description', ''),
-                           report_data.get('order_number', 0),
-                           report_data.get('worker_id'),
-                           report_data.get('environment_id')
-                       ))
+                           INSERT INTO reports (
+                               report_name, report_date, description, order_number,
+                               worker_id, environment_id
+                           ) VALUES (?, ?, ?, ?, ?, ?)
+                           """, (
+                               report_data.get('name', ''),
+                               report_data.get('date', datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                               report_data.get('description', ''),
+                               report_data.get('order_number', 0),
+                               report_data.get('worker_id'),
+                               report_data.get('environment_id')
+                           ))
             report_id = cursor.lastrowid
             conn.commit()
             return report_id
@@ -491,10 +601,10 @@ class DatabaseHandler:
         cursor = conn.cursor()
         try:
             cursor.execute("""
-                       SELECT report_id, report_name, report_date, description, order_number
-                       FROM reports
-                       ORDER BY report_date DESC
-                       """)
+                           SELECT report_id, report_name, report_date, description, order_number
+                           FROM reports
+                           ORDER BY report_date DESC
+                           """)
             reports = cursor.fetchall()
             return reports
         except Exception as e:
@@ -509,11 +619,11 @@ class DatabaseHandler:
         cursor = conn.cursor()
         try:
             cursor.execute("""
-                       SELECT report_id, report_name, report_date, description, order_number,
-                              worker_id, environment_id
-                       FROM reports
-                       WHERE report_id = ?
-                       """, (report_id,))
+                           SELECT report_id, report_name, report_date, description, order_number,
+                                  worker_id, environment_id
+                           FROM reports
+                           WHERE report_id = ?
+                           """, (report_id,))
             report = cursor.fetchone()
             return report
         except Exception as e:
@@ -521,6 +631,7 @@ class DatabaseHandler:
             return None
         finally:
             conn.close()
+
 
 if __name__ == "__main__":
     db = DatabaseHandler()
