@@ -1,6 +1,5 @@
 import sys
 import os
-import sqlite3
 from datetime import datetime
 from PySide6.QtWidgets import (QApplication, QMainWindow, QMessageBox,
                                QTableWidget, QTableWidgetItem, QHeaderView,
@@ -11,8 +10,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMessageBox,
                                QDialogButtonBox, QFileDialog, QScrollArea, QGridLayout,
                                QDoubleSpinBox, QDateEdit, QDateTimeEdit, QPlainTextEdit,
                                QListView, QMenuBar, QMenu, QSplitter, QFrame)
-from PySide6.QtCore import Qt, QDate, QDateTime, Signal, Slot, QFile, QIODevice, QStringListModel
-from PySide6.QtGui import QAction, QIcon, QFont, QStandardItemModel, QStandardItem
+from PySide6.QtCore import Qt, QDate, QDateTime, Signal, QFile, QIODevice
+from PySide6.QtGui import QAction, QStandardItemModel, QStandardItem
 from PySide6.QtUiTools import QUiLoader
 
 # Добавляем путь к папке settings
@@ -21,8 +20,9 @@ if settings_path not in sys.path:
     sys.path.insert(0, settings_path)
     print(f"✅ Добавлен путь к настройкам: {settings_path}")
 
-# Пробуем импортировать настройки
+# Импортируем DatabaseHandler из settings.py (там есть все методы для отчетов)
 try:
+    from settings import DatabaseHandler
     from settings import MainWindow as SettingsWindow
     SETTINGS_AVAILABLE = True
     print("✅ Модуль настроек загружен")
@@ -40,170 +40,6 @@ print(f"Путь к БД: {db_path}")
 print(f"Файл БД существует: {os.path.exists(db_path)}")
 print(f"Путь к UI: {ui_path}")
 print(f"Файл UI существует: {os.path.exists(ui_path)}")
-
-
-# ========== КЛАСС ДЛЯ РАБОТЫ С БД ==========
-class DatabaseHandler:
-    """Класс для работы с БД"""
-
-    def __init__(self, db_path):
-        self.db_path = db_path
-        print("✅ DatabaseHandler инициализирован")
-
-    def get_connection(self):
-        conn = sqlite3.connect(self.db_path)
-        conn.execute("PRAGMA foreign_keys = ON")
-        conn.row_factory = sqlite3.Row
-        return conn
-
-    # ========== ПРЕДПРИЯТИЕ ==========
-    def get_company_name(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT name FROM company LIMIT 1")
-            result = cursor.fetchone()
-            return result[0] if result else "ГБОУ Больница 2 г. Апшеронск"
-        except:
-            return "ГБОУ Больница 2 г. Апшеронск"
-        finally:
-            conn.close()
-
-    # ========== ФИЛИАЛЫ ==========
-    def get_all_branches(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT branch_id, name FROM branches")
-        branches = cursor.fetchall()
-        conn.close()
-        return branches
-
-    def get_branch(self, branch_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT branch_id, name, floors_count FROM branches WHERE branch_id = ?", (branch_id,))
-        branch = cursor.fetchone()
-        conn.close()
-        return branch
-
-    # ========== СОТРУДНИКИ ==========
-    def get_employees(self, branch_id=None):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        if branch_id:
-            cursor.execute("""
-                           SELECT worker_id, name_id, job_title
-                           FROM employees
-                           WHERE branch_id = ?
-                           ORDER BY name_id
-                           """, (branch_id,))
-        else:
-            cursor.execute("SELECT worker_id, name_id, job_title FROM employees ORDER BY name_id")
-        employees = cursor.fetchall()
-        conn.close()
-        return employees
-
-    def get_employee(self, worker_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT worker_id, name_id, job_title FROM employees WHERE worker_id = ?", (worker_id,))
-        emp = cursor.fetchone()
-        conn.close()
-        return emp
-
-    # ========== КОМНАТЫ ==========
-    def get_rooms_by_branch_and_floor(self, branch_id, floor):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       SELECT room_id, room_number, room_name, capacity, desks_count,
-                              chairs_count, sockets_count, area
-                       FROM room
-                       WHERE branch_id = ? AND floor = ?
-                       ORDER BY room_number
-                       """, (branch_id, floor))
-        rooms = cursor.fetchall()
-        conn.close()
-        return rooms
-
-    def get_room(self, room_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       SELECT room_id, room_number, room_name, floor, capacity,
-                              desks_count, chairs_count, sockets_count, area,
-                              responsible_employee_id, notes
-                       FROM room
-                       WHERE room_id = ?
-                       """, (room_id,))
-        room = cursor.fetchone()
-        conn.close()
-        return room
-
-    # ========== ОБОРУДОВАНИЕ ==========
-    def get_equipment_by_room(self, room_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       SELECT equipment_id, name, category, type, serial_number, status
-                       FROM equipment
-                       WHERE room_id = ?
-                       ORDER BY name
-                       """, (room_id,))
-        equipment = cursor.fetchall()
-        conn.close()
-        return equipment
-
-    def get_all_equipment(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       SELECT e.equipment_id, e.name, e.category, e.type, e.serial_number,
-                              e.status, r.room_number, r.room_name, b.name as branch_name
-                       FROM equipment e
-                                LEFT JOIN room r ON e.room_id = r.room_id
-                                LEFT JOIN branches b ON r.branch_id = b.branch_id
-                       ORDER BY e.name
-                       """)
-        equipment = cursor.fetchall()
-        conn.close()
-        return equipment
-
-    def add_equipment(self, data):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       INSERT INTO equipment (
-                           name, category, type, quantity, serial_number,
-                           supplier, price, date_incoming, state_incoming,
-                           phone_supplier, email_supplier, status, notes
-                       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                       """, (
-                           data.get('name', ''),
-                           data.get('category', ''),
-                           data.get('type', ''),
-                           data.get('quantity', 1),
-                           data.get('serial_number', ''),
-                           data.get('supplier', ''),
-                           data.get('price', 0),
-                           data.get('date_incoming', datetime.now().strftime("%Y-%m-%d")),
-                           data.get('state_incoming', 1),
-                           data.get('phone_supplier', ''),
-                           data.get('email_supplier', ''),
-                           data.get('status', 'in_use'),
-                           data.get('notes', '')
-                       ))
-        equip_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
-        return equip_id
-
-    def update_equipment_room(self, equipment_id, room_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE equipment SET room_id = ? WHERE equipment_id = ?", (room_id, equipment_id))
-        conn.commit()
-        conn.close()
 
 
 # ========== ДИАЛОГ СПИСКА ОТЧЕТОВ ==========

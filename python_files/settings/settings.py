@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, QDate
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QIODevice
 from PySide6.QtGui import QScreen
+from datetime import datetime
 
 # Путь к твоей БД
 python_files_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -59,6 +60,70 @@ class DatabaseHandler:
             conn.commit()
         except Exception as e:
             print(f"Ошибка сохранения названия: {e}")
+        finally:
+            conn.close()
+
+    def add_report(self, report_data):
+        """Добавление нового отчета"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           INSERT INTO reports (
+                               report_name, report_date, description, order_number,
+                               worker_id, environment_id
+                           ) VALUES (?, ?, ?, ?, ?, ?)
+                           """, (
+                               report_data.get('name', ''),
+                               report_data.get('date', datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
+                               report_data.get('description', ''),
+                               report_data.get('order_number', 0),
+                               report_data.get('worker_id'),
+                               report_data.get('environment_id')
+                           ))
+            report_id = cursor.lastrowid
+            conn.commit()
+            return report_id
+        except Exception as e:
+            (print(f"Ошибка добавления отчета: {e}"))
+            return None
+        finally:
+            conn.close()
+
+    def get_all_reports(self):
+        """Получение всех отчетов"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           SELECT report_id, report_name, report_date, description, order_number
+                           FROM reports
+                           ORDER BY report_date DESC
+                           """)
+            reports = cursor.fetchall()
+            return reports
+        except Exception as e:
+            print(f"Ошибка загрузки отчетов: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def get_report(self, report_id):
+        """Получение отчета по ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                           SELECT report_id, report_name, report_date, description, order_number,
+                                  worker_id, environment_id
+                           FROM reports
+                           WHERE report_id = ?
+                           """, (report_id,))
+            report = cursor.fetchone()
+            return report
+        except Exception as e:
+            print(f"Ошибка загрузки отчета: {e}")
+            return None
         finally:
             conn.close()
 
@@ -1112,6 +1177,7 @@ class MainWindow(QMainWindow):
         self.current_pass_edit.clear()
         self.new_pass_edit.clear()
         self.changes_made = False
+
 
 
 def main():
