@@ -12,8 +12,24 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QMessageBox,
                                QDoubleSpinBox, QDateEdit, QDateTimeEdit, QPlainTextEdit,
                                QListView, QMenuBar, QMenu, QSplitter, QFrame)
 from PySide6.QtCore import Qt, QDate, QDateTime, Signal, Slot, QFile, QIODevice, QStringListModel
-from PySide6.QtGui import QAction, QIcon, QFont, QStandardItemModel
+from PySide6.QtGui import QAction, QIcon, QFont, QStandardItemModel, QStandardItem
 from PySide6.QtUiTools import QUiLoader
+
+# Добавляем путь к папке settings
+settings_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "settings")
+if settings_path not in sys.path:
+    sys.path.insert(0, settings_path)
+    print(f"✅ Добавлен путь к настройкам: {settings_path}")
+
+# Пробуем импортировать настройки
+try:
+    from settings import MainWindow as SettingsWindow
+    SETTINGS_AVAILABLE = True
+    print("✅ Модуль настроек загружен")
+except ImportError as e:
+    print(f"❌ Ошибка загрузки настроек: {e}")
+    SETTINGS_AVAILABLE = False
+    SettingsWindow = None
 
 # Путь к БД
 python_files_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -483,6 +499,9 @@ class ReportWindow(QMainWindow):
         self.current_report_id = None
         self.current_room_id = None
         self.workplaces_data = {}  # {номер_места: данные}
+        self.arrival_items = []  # Список позиций поступления для переноса
+        self.distribution_model = None  # Модель для таблицы распределения
+        self.settings_window = None  # Для окна настроек
         self.setup_ui()
         self.load_initial_data()
         self.showMaximized()
@@ -504,38 +523,76 @@ class ReportWindow(QMainWindow):
             return
 
         self.setCentralWidget(self.ui.centralwidget)
-        self.setup_menu()
+
+        # НЕ используем меню из UI, создаем свое
+        self.create_menu()
+
         self.setup_tabs()
 
-    def setup_menu(self):
-        """Настройка меню"""
+    def create_menu(self):
+        """Создание меню программно"""
+        menubar = self.menuBar()
+
         # Файл
-        if hasattr(self.ui, 'action_14'):
-            self.ui.action_14.triggered.connect(self.new_report)
-        if hasattr(self.ui, 'action_15'):
-            self.ui.action_15.triggered.connect(self.new_arrival)
-        if hasattr(self.ui, 'action_3'):
-            self.ui.action_3.triggered.connect(self.save_report_txt)
-        if hasattr(self.ui, 'action_4'):
-            self.ui.action_4.triggered.connect(self.save_report_as)
-        if hasattr(self.ui, 'action_5'):
-            self.ui.action_5.triggered.connect(self.show_reports_list)
+        file_menu = menubar.addMenu("Файл")
+        file_menu.addAction("Новая отчетность", self.new_report)
+        file_menu.addAction("Новое поступление", self.new_arrival)
+        file_menu.addSeparator()
+        file_menu.addAction("Сохранить отчет", self.save_report_txt)
+        file_menu.addAction("Сохранить как...", self.save_report_as)
+        file_menu.addSeparator()
+        file_menu.addAction("Полный список отчетов", self.show_reports_list)
+        file_menu.addSeparator()
+        file_menu.addAction("Выход", self.close)
 
         # Настройки
-        if hasattr(self.ui, 'action_7'):
-            self.ui.action_7.triggered.connect(self.on_font_size)
-        if hasattr(self.ui, 'action_8'):
-            self.ui.action_8.triggered.connect(self.on_theme)
+        settings_menu = menubar.addMenu("Настройки")
+        settings_menu.addAction("Размер шрифта", self.on_font_size)
+        settings_menu.addAction("Тема", self.on_theme)
+        settings_menu.addSeparator()
+
+        # Настройка окружения - если доступен файл настроек
+        if SETTINGS_AVAILABLE:
+            settings_menu.addAction("Редактировать рабочее окружение", self.open_settings_window)
+        else:
+            action = settings_menu.addAction("Редактировать рабочее окружение (недоступно)")
+            action.setEnabled(False)
 
         # Справка
-        if hasattr(self.ui, 'action_9'):
-            self.ui.action_9.triggered.connect(self.show_version)
-        if hasattr(self.ui, 'action_10'):
-            self.ui.action_10.triggered.connect(self.show_project_info)
+        help_menu = menubar.addMenu("Справка")
+        help_menu.addAction("Версия", self.show_version)
+        help_menu.addAction("О программе", self.show_project_info)
 
-        # Настройка окружения
-        if hasattr(self.ui, 'action_11'):
-            self.ui.action_11.triggered.connect(self.open_environment_settings)
+        # Открыть схему
+        schema_menu = menubar.addMenu("Открыть схему")
+        schema_menu.addAction("Показать схему", self.show_schema)
+
+        print("✅ Меню создано")
+
+    def open_settings_window(self):
+        """Открыть окно настроек из settings.py"""
+        if not SETTINGS_AVAILABLE:
+            QMessageBox.warning(self, "Ошибка", "Модуль настроек не найден")
+            return
+
+        try:
+            # Создаем экземпляр окна настроек
+            self.settings_window = SettingsWindow()
+
+            # Чтобы окно удалялось при закрытии
+            self.settings_window.setAttribute(Qt.WA_DeleteOnClose)
+
+            # Показываем окно
+            self.settings_window.show()
+
+            print("✅ Окно настроек открыто")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось открыть настройки:\n{e}")
+
+    def show_schema(self):
+        """Показать схему"""
+        QMessageBox.information(self, "Схема", "Здесь будет открываться схема")
 
     def setup_tabs(self):
         """Настройка вкладок"""
@@ -543,6 +600,7 @@ class ReportWindow(QMainWindow):
         self.setup_inventory_tab()
         self.setup_distribution_tab()
 
+    # ========== ВКЛАДКА ПОСТУПЛЕНИЕ ==========
     def setup_arrival_tab(self):
         """Настройка вкладки Поступление"""
         # Заполняем комбобоксы
@@ -550,205 +608,84 @@ class ReportWindow(QMainWindow):
         self.load_branches_to_combo(self.ui.comboBox_6)
         self.load_employees_to_combo(self.ui.comboBox_8)
 
-        # Настройка tableView
-        self.ui.tableWidget.setColumnCount(6)
+        # Настройка tableWidget для отображения базы данных поступлений
+        self.ui.tableWidget.setColumnCount(7)
         self.ui.tableWidget.setHorizontalHeaderLabels([
-            "№", "Название", "Категория", "Количество", "Цена", "Серийный №"
+            "№", "Название", "Категория", "Тип", "Количество", "Цена", "Серийный №"
         ])
         self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.tableWidget.setSelectionBehavior(QTableWidget.SelectRows)
+        self.ui.tableWidget.setSelectionMode(QTableWidget.MultiSelection)
 
-        # Кнопки
-        self.ui.pushButton_5.clicked.connect(self.export_arrival_pdf)
-        self.ui.pushButton_3.clicked.connect(self.export_arrival_txt)
-        self.ui.pushButton_2.clicked.connect(self.cancel_arrival)
-        self.ui.pushButton.clicked.connect(self.save_arrival)
+        # Подключаем кнопки из UI
+        if hasattr(self.ui, 'pushButton_5'):
+            self.ui.pushButton_5.clicked.connect(self.export_arrival_pdf)
+        if hasattr(self.ui, 'pushButton_3'):
+            self.ui.pushButton_3.clicked.connect(self.export_arrival_txt)
+        if hasattr(self.ui, 'pushButton_2'):
+            self.ui.pushButton_2.clicked.connect(self.cancel_arrival)
+        if hasattr(self.ui, 'pushButton'):
+            self.ui.pushButton.clicked.connect(self.save_arrival)
+        if hasattr(self.ui, 'pushButton_16'):
+            self.ui.pushButton_16.clicked.connect(self.add_arrival_position)
 
-    def setup_inventory_tab(self):
-        """Настройка вкладки Инвентаризация"""
-        self.load_branches_to_combo(self.ui.comboBox_3)
-        self.load_branches_to_combo(self.ui.comboBox_4)
-        self.load_employees_to_combo(self.ui.comboBox)
-        self.load_employees_to_combo(self.ui.comboBox_2)
+        # Загружаем существующие поступления
+        self.load_arrival_data()
 
-        if hasattr(self.ui, 'comboBox_4'):
-            self.ui.comboBox_4.currentIndexChanged.connect(self.on_branch_changed_inventory)
-        if hasattr(self.ui, 'spinBox_3'):
-            self.ui.spinBox_3.valueChanged.connect(self.on_floor_changed_inventory)
-
-        if hasattr(self.ui, 'tableView'):
-            self.ui.tableView.setModel(QStandardItemModel())
-            model = self.ui.tableView.model()
-            if model:
-                model.setHorizontalHeaderLabels(["ID", "Название", "Категория", "Серийный №", "Статус"])
-
-        # Фильтры
-        if hasattr(self.ui, 'comboBox_12'):
-            self.ui.comboBox_12.currentIndexChanged.connect(self.apply_inventory_filters)
-        if hasattr(self.ui, 'comboBox_11'):
-            self.ui.comboBox_11.currentIndexChanged.connect(self.apply_inventory_filters)
-        if hasattr(self.ui, 'lineEdit_20'):
-            self.ui.lineEdit_20.textChanged.connect(self.apply_inventory_filters)
-        if hasattr(self.ui, 'lineEdit_21'):
-            self.ui.lineEdit_21.textChanged.connect(self.apply_inventory_filters)
-        if hasattr(self.ui, 'lineEdit_22'):
-            self.ui.lineEdit_22.textChanged.connect(self.apply_inventory_filters)
-
-        self.load_categories_to_combo(self.ui.comboBox_12)
-        self.load_types_to_combo(self.ui.comboBox_11)
-
-    def setup_distribution_tab(self):
-        """Настройка вкладки Распределение"""
-        self.load_employees_to_combo(self.ui.comboBox_13)
-        self.load_branches_to_combo(self.ui.comboBox_15)
-        self.load_branches_to_combo(self.ui.comboBox_14)
-
-        self.ui.comboBox_14.currentIndexChanged.connect(self.on_branch_changed_distribution)
-        self.ui.spinBox_6.valueChanged.connect(self.on_floor_changed_distribution)
-        self.ui.comboBox_16.currentIndexChanged.connect(self.on_room_changed_distribution)
-
-        self.setup_workplaces_area()
-
-        self.ui.comboBox_17.currentIndexChanged.connect(self.apply_distribution_filters)
-        self.ui.comboBox_18.currentIndexChanged.connect(self.apply_distribution_filters)
-        self.ui.lineEdit_27.textChanged.connect(self.apply_distribution_filters)
-        self.ui.lineEdit_26.textChanged.connect(self.apply_distribution_filters)
-        self.ui.lineEdit_25.textChanged.connect(self.apply_distribution_filters)
-
-        self.load_categories_to_combo(self.ui.comboBox_17)
-        self.load_types_to_combo(self.ui.comboBox_18)
-
-        self.ui.pushButton_8.clicked.connect(self.save_all_distribution)
-        self.ui.pushButton_9.clicked.connect(self.delete_all_distribution)
-        self.ui.pushButton_4.clicked.connect(self.save_room_distribution)
-        self.ui.pushButton_6.clicked.connect(self.reset_room_distribution)
-        self.ui.pushButton_7.clicked.connect(self.export_room_report)
-        self.ui.pushButton_10.clicked.connect(self.export_final_report)
-
-    def setup_workplaces_area(self):
-        """Настройка области для динамических рабочих мест"""
-        self.workplaces_scroll = QScrollArea()
-        self.workplaces_scroll.setWidgetResizable(True)
-        self.workplaces_scroll.setMinimumHeight(300)
-
-        self.workplaces_container = QWidget()
-        self.workplaces_layout = QVBoxLayout(self.workplaces_container)
-        self.workplaces_layout.addStretch()
-
-        self.workplaces_scroll.setWidget(self.workplaces_container)
-
-        if hasattr(self.ui, 'groupBox_15'):
-            layout = self.ui.groupBox_15.layout()
-            if not layout:
-                layout = QVBoxLayout(self.ui.groupBox_15)
-            layout.addWidget(self.workplaces_scroll)
-
-    def load_initial_data(self):
-        """Загрузка начальных данных"""
-        print("Загрузка начальных данных...")
-
-        # Вкладка Поступление
-        self.load_branches_to_combo(self.ui.comboBox_5)
-        self.load_branches_to_combo(self.ui.comboBox_6)
-        self.load_employees_to_combo(self.ui.comboBox_8)
-
-        # Вкладка Инвентаризация
-        self.load_branches_to_combo(self.ui.comboBox_3)
-        self.load_branches_to_combo(self.ui.comboBox_4)
-        self.load_employees_to_combo(self.ui.comboBox)
-        self.load_employees_to_combo(self.ui.comboBox_2)
-
-        # Вкладка Распределение
-        self.load_employees_to_combo(self.ui.comboBox_13)
-        self.load_branches_to_combo(self.ui.comboBox_15)
-        self.load_branches_to_combo(self.ui.comboBox_14)
-
-        # Категории и типы
-        self.load_categories_to_combo(self.ui.comboBox_9)
-        self.load_types_to_combo(self.ui.comboBox_10)
-
-        if hasattr(self.ui, 'dateTimeEdit'):
-            self.ui.dateTimeEdit.setDateTime(QDateTime.currentDateTime())
-
-        self.ui.progressBar.setValue(0)
-        print("Загрузка данных завершена")
-
-    def load_branches_to_combo(self, combo):
-        """Загрузка филиалов в комбобокс"""
-        if not combo:
-            return
-        combo.clear()
-        combo.addItem("Выберите филиал", None)
+    def load_arrival_data(self):
+        """Загрузка данных из БД в таблицу поступлений"""
         try:
-            branches = self.db.get_all_branches()
-            for branch in branches:
-                combo.addItem(branch[1], branch[0])
+            equipment = self.db.get_all_equipment()
+            self.ui.tableWidget.setRowCount(0)
+            for i, item in enumerate(equipment):
+                self.ui.tableWidget.insertRow(i)
+                self.ui.tableWidget.setItem(i, 0, QTableWidgetItem(str(i + 1)))
+                self.ui.tableWidget.setItem(i, 1, QTableWidgetItem(item[1]))  # name
+                self.ui.tableWidget.setItem(i, 2, QTableWidgetItem(item[2]))  # category
+                self.ui.tableWidget.setItem(i, 3, QTableWidgetItem(item[3]))  # type
+                self.ui.tableWidget.setItem(i, 4, QTableWidgetItem("1"))  # quantity
+                self.ui.tableWidget.setItem(i, 5, QTableWidgetItem("0"))  # price
+                self.ui.tableWidget.setItem(i, 6, QTableWidgetItem(item[4]))  # serial_number
+            print(f"Загружено позиций: {len(equipment)}")
         except Exception as e:
-            print(f"Ошибка загрузки филиалов: {e}")
+            print(f"Ошибка загрузки поступлений: {e}")
 
-    def load_employees_to_combo(self, combo):
-        """Загрузка сотрудников в комбобокс"""
-        if not combo:
-            return
-        combo.clear()
-        combo.addItem("Выберите сотрудника", None)
-        try:
-            employees = self.db.get_employees()
-            for emp in employees:
-                combo.addItem(f"{emp[1]} ({emp[2]})", emp[0])
-        except Exception as e:
-            print(f"Ошибка загрузки сотрудников: {e}")
-
-    def load_categories_to_combo(self, combo):
-        """Загрузка категорий оборудования"""
-        if not combo:
-            return
-        combo.clear()
-        combo.addItem("Все категории", None)
-        categories = ["Оргтехника", "Мебель", "Медицинское", "Инструменты", "Расходные материалы"]
-        for cat in categories:
-            combo.addItem(cat, cat)
-
-    def load_types_to_combo(self, combo):
-        """Загрузка типов оборудования"""
-        if not combo:
-            return
-        combo.clear()
-        combo.addItem("Все типы", None)
-        types = ["Ноутбук", "Компьютер", "Принтер", "Монитор", "Стол", "Стул", "Кровать", "Холодильник"]
-        for t in types:
-            combo.addItem(t, t)
-
-    def load_rooms_to_combo(self, combo, branch_id, floor):
-        """Загрузка комнат в комбобокс"""
-        if not combo:
-            return
-        combo.clear()
-        combo.addItem("Выберите комнату", None)
-        if branch_id and floor:
-            rooms = self.db.get_rooms_by_branch_and_floor(branch_id, floor)
-            for room in rooms:
-                combo.addItem(f"{room[1]} - {room[2]}", room[0])
-
-    # ========== МЕТОДЫ ДЛЯ ВКЛАДКИ ПОСТУПЛЕНИЕ ==========
     def add_arrival_position(self):
-        """Добавление позиции в таблицу поступления"""
-        row = self.ui.tableWidget.rowCount()
-        self.ui.tableWidget.insertRow(row)
+        """Добавление позиции в таблицу поступления и БД"""
+        data = {
+            'name': self.ui.lineEdit_15.text() if hasattr(self.ui, 'lineEdit_15') else "",
+            'category': self.ui.comboBox_9.currentText() if hasattr(self.ui, 'comboBox_9') else "",
+            'type': self.ui.comboBox_10.currentText() if hasattr(self.ui, 'comboBox_10') else "",
+            'quantity': self.ui.spinBox_2.value() if hasattr(self.ui, 'spinBox_2') else 1,
+            'serial_number': self.ui.lineEdit_18.text() if hasattr(self.ui, 'lineEdit_18') else "",
+            'supplier': self.ui.lineEdit_7.text() if hasattr(self.ui, 'lineEdit_7') else "",
+            'price': self.ui.doubleSpinBox.value() if hasattr(self.ui, 'doubleSpinBox') else 0,
+            'date_incoming': self.ui.dateTimeEdit.dateTime().toString("yyyy-MM-dd") if hasattr(self.ui, 'dateTimeEdit') else datetime.now().strftime("%Y-%m-%d"),
+            'state_incoming': 1,
+            'phone_supplier': self.ui.lineEdit_9.text() if hasattr(self.ui, 'lineEdit_9') else "",
+            'email_supplier': self.ui.lineEdit_10.text() if hasattr(self.ui, 'lineEdit_10') else "",
+            'notes': self.ui.plainTextEdit.toPlainText() if hasattr(self.ui, 'plainTextEdit') else ""
+        }
 
-        category = self.ui.comboBox_9.currentText() if hasattr(self.ui, 'comboBox_9') else ""
-        name = self.ui.lineEdit_15.text() if hasattr(self.ui, 'lineEdit_15') else ""
-        quantity = self.ui.spinBox_2.value() if hasattr(self.ui, 'spinBox_2') else 1
-        price = self.ui.doubleSpinBox.value() if hasattr(self.ui, 'doubleSpinBox') else 0
-        serial = self.ui.lineEdit_18.text() if hasattr(self.ui, 'lineEdit_18') else ""
+        if not data['name'] or not data['serial_number']:
+            QMessageBox.warning(self, "Ошибка", "Заполните название и серийный номер")
+            return
 
-        self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-        self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(name))
-        self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(category))
-        self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(str(quantity)))
-        self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(price)))
-        self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(serial))
-
-        self.clear_arrival_form()
+        try:
+            equip_id = self.db.add_equipment(data)
+            row = self.ui.tableWidget.rowCount()
+            self.ui.tableWidget.insertRow(row)
+            self.ui.tableWidget.setItem(row, 0, QTableWidgetItem(str(row + 1)))
+            self.ui.tableWidget.setItem(row, 1, QTableWidgetItem(data['name']))
+            self.ui.tableWidget.setItem(row, 2, QTableWidgetItem(data['category']))
+            self.ui.tableWidget.setItem(row, 3, QTableWidgetItem(data['type']))
+            self.ui.tableWidget.setItem(row, 4, QTableWidgetItem(str(data['quantity'])))
+            self.ui.tableWidget.setItem(row, 5, QTableWidgetItem(str(data['price'])))
+            self.ui.tableWidget.setItem(row, 6, QTableWidgetItem(data['serial_number']))
+            self.clear_arrival_form()
+            QMessageBox.information(self, "Успех", f"Позиция добавлена (ID: {equip_id})")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить: {e}")
 
     def clear_arrival_form(self):
         """Очистка формы поступления"""
@@ -799,8 +736,8 @@ class ReportWindow(QMainWindow):
                     num = self.ui.tableWidget.item(row, 0).text() if self.ui.tableWidget.item(row, 0) else ""
                     name = self.ui.tableWidget.item(row, 1).text() if self.ui.tableWidget.item(row, 1) else ""
                     cat = self.ui.tableWidget.item(row, 2).text() if self.ui.tableWidget.item(row, 2) else ""
-                    qty = self.ui.tableWidget.item(row, 3).text() if self.ui.tableWidget.item(row, 3) else "0"
-                    price = self.ui.tableWidget.item(row, 4).text() if self.ui.tableWidget.item(row, 4) else "0"
+                    qty = self.ui.tableWidget.item(row, 4).text() if self.ui.tableWidget.item(row, 4) else "0"
+                    price = self.ui.tableWidget.item(row, 5).text() if self.ui.tableWidget.item(row, 5) else "0"
 
                     f.write(f"{num:<4} {name:<20} {cat:<15} {qty:<8} {price:<10}\n")
 
@@ -825,29 +762,50 @@ class ReportWindow(QMainWindow):
         dlg = ConfirmationDialog("Отменить ввод данных?", self)
         if dlg.exec() == QDialog.Accepted:
             self.clear_arrival_form()
-            self.ui.tableWidget.setRowCount(0)
 
     def save_arrival(self):
         """Сохранение поступления"""
-        dlg = ConfirmationDialog("Сохранить поступление?", self)
+        dlg = ConfirmationDialog("Сохранить все изменения?", self)
         if dlg.exec() == QDialog.Accepted:
-            QMessageBox.information(self, "Успех", "Поступление сохранено")
-            self.ui.progressBar.setValue(100)
+            try:
+                self.ui.progressBar.setValue(100)
+                QMessageBox.information(self, "Успех", "Данные сохранены в БД")
+            except Exception as e:
+                QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить: {e}")
 
-    # ========== МЕТОДЫ ДЛЯ НОВЫХ КНОПОК ==========
-    def add_inventory_item(self):
-        """Добавление оборудования в инвентаризацию"""
-        QMessageBox.information(self, "Информация", "Добавление оборудования в инвентаризацию")
+    # ========== ВКЛАДКА ИНВЕНТАРИЗАЦИЯ ==========
+    def setup_inventory_tab(self):
+        """Настройка вкладки Инвентаризация"""
+        self.load_branches_to_combo(self.ui.comboBox_3)
+        self.load_branches_to_combo(self.ui.comboBox_4)
+        self.load_employees_to_combo(self.ui.comboBox)
+        self.load_employees_to_combo(self.ui.comboBox_2)
 
-    def add_workplace(self):
-        """Добавление рабочего места"""
-        if self.current_room_id:
-            new_number = len(self.workplaces_data) + 1
-            self.edit_workplace(new_number)
-        else:
-            QMessageBox.warning(self, "Ошибка", "Сначала выберите комнату")
+        if hasattr(self.ui, 'comboBox_4'):
+            self.ui.comboBox_4.currentIndexChanged.connect(self.on_branch_changed_inventory)
+        if hasattr(self.ui, 'spinBox_3'):
+            self.ui.spinBox_3.valueChanged.connect(self.on_floor_changed_inventory)
 
-    # ========== МЕТОДЫ ДЛЯ ВКЛАДКИ ИНВЕНТАРИЗАЦИЯ ==========
+        if hasattr(self.ui, 'tableView'):
+            self.ui.tableView.setModel(QStandardItemModel())
+            model = self.ui.tableView.model()
+            if model:
+                model.setHorizontalHeaderLabels(["ID", "Название", "Категория", "Серийный №", "Статус"])
+
+        if hasattr(self.ui, 'comboBox_12'):
+            self.ui.comboBox_12.currentIndexChanged.connect(self.apply_inventory_filters)
+        if hasattr(self.ui, 'comboBox_11'):
+            self.ui.comboBox_11.currentIndexChanged.connect(self.apply_inventory_filters)
+        if hasattr(self.ui, 'lineEdit_20'):
+            self.ui.lineEdit_20.textChanged.connect(self.apply_inventory_filters)
+        if hasattr(self.ui, 'lineEdit_21'):
+            self.ui.lineEdit_21.textChanged.connect(self.apply_inventory_filters)
+        if hasattr(self.ui, 'lineEdit_22'):
+            self.ui.lineEdit_22.textChanged.connect(self.apply_inventory_filters)
+
+        self.load_categories_to_combo(self.ui.comboBox_12)
+        self.load_types_to_combo(self.ui.comboBox_11)
+
     def on_branch_changed_inventory(self):
         """Изменение филиала во вкладке инвентаризация"""
         branch_id = self.ui.comboBox_4.currentData()
@@ -860,7 +818,6 @@ class ReportWindow(QMainWindow):
         """Изменение этажа во вкладке инвентаризация"""
         branch_id = self.ui.comboBox_4.currentData()
         floor = self.ui.spinBox_3.value() if hasattr(self.ui, 'spinBox_3') else 1
-
         if branch_id and floor and hasattr(self.ui, 'comboBox_7'):
             self.load_rooms_to_combo(self.ui.comboBox_7, branch_id, floor)
 
@@ -868,7 +825,151 @@ class ReportWindow(QMainWindow):
         """Применение фильтров инвентаризации"""
         pass
 
-    # ========== МЕТОДЫ ДЛЯ ВКЛАДКИ РАСПРЕДЕЛЕНИЕ ==========
+    # ========== ВКЛАДКА РАСПРЕДЕЛЕНИЕ ==========
+    def setup_distribution_tab(self):
+        """Настройка вкладки Распределение"""
+        self.load_employees_with_position(self.ui.comboBox_13)
+        self.load_branches_to_combo(self.ui.comboBox_15)
+        self.load_branches_to_combo(self.ui.comboBox_14)
+
+        self.ui.comboBox_14.currentIndexChanged.connect(self.on_branch_changed_distribution)
+        self.ui.spinBox_6.valueChanged.connect(self.on_floor_changed_distribution)
+        self.ui.comboBox_16.currentIndexChanged.connect(self.on_room_changed_distribution)
+
+        self.setup_workplaces_area()
+        self.setup_distribution_table()
+
+        if hasattr(self.ui, 'pushButton_15'):
+            self.ui.pushButton_15.clicked.connect(self.transfer_selected_items)
+            print("✅ Кнопка переноса подключена")
+
+        self.ui.comboBox_17.currentIndexChanged.connect(self.apply_distribution_filters)
+        self.ui.comboBox_18.currentIndexChanged.connect(self.apply_distribution_filters)
+        self.ui.lineEdit_27.textChanged.connect(self.apply_distribution_filters)
+        self.ui.lineEdit_26.textChanged.connect(self.apply_distribution_filters)
+        self.ui.lineEdit_25.textChanged.connect(self.apply_distribution_filters)
+
+        self.load_categories_to_combo(self.ui.comboBox_17)
+        self.load_types_to_combo(self.ui.comboBox_18)
+
+        if hasattr(self.ui, 'pushButton_8'):
+            self.ui.pushButton_8.clicked.connect(self.save_all_distribution)
+        if hasattr(self.ui, 'pushButton_9'):
+            self.ui.pushButton_9.clicked.connect(self.delete_all_distribution)
+        if hasattr(self.ui, 'pushButton_4'):
+            self.ui.pushButton_4.clicked.connect(self.save_room_distribution)
+        if hasattr(self.ui, 'pushButton_6'):
+            self.ui.pushButton_6.clicked.connect(self.reset_room_distribution)
+        if hasattr(self.ui, 'pushButton_7'):
+            self.ui.pushButton_7.clicked.connect(self.export_room_report)
+        if hasattr(self.ui, 'pushButton_10'):
+            self.ui.pushButton_10.clicked.connect(self.export_final_report)
+
+    def setup_distribution_table(self):
+        """Настройка таблицы для распределения"""
+        self.distribution_model = QStandardItemModel()
+        self.distribution_model.setHorizontalHeaderLabels([
+            "ID", "Название", "Категория", "Тип", "Серийный №", "Выбрать"
+        ])
+        self.ui.tableView_2.setModel(self.distribution_model)
+        self.ui.tableView_2.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.tableView_2.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.ui.tableView_2.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.load_distribution_equipment()
+
+    def load_distribution_equipment(self):
+        """Загрузка оборудования для распределения"""
+        try:
+            equipment = self.db.get_all_equipment()
+            self.distribution_model.removeRows(0, self.distribution_model.rowCount())
+            for item in equipment:
+                row = []
+                id_item = QStandardItem(str(item[0]))
+                id_item.setEditable(False)
+                row.append(id_item)
+                name_item = QStandardItem(item[1])
+                name_item.setEditable(False)
+                row.append(name_item)
+                cat_item = QStandardItem(item[2])
+                cat_item.setEditable(False)
+                row.append(cat_item)
+                type_item = QStandardItem(item[3])
+                type_item.setEditable(False)
+                row.append(type_item)
+                serial_item = QStandardItem(item[4])
+                serial_item.setEditable(False)
+                row.append(serial_item)
+                check_item = QStandardItem()
+                check_item.setCheckable(True)
+                check_item.setEditable(False)
+                row.append(check_item)
+                self.distribution_model.appendRow(row)
+            print(f"Загружено оборудования для распределения: {len(equipment)}")
+        except Exception as e:
+            print(f"Ошибка загрузки оборудования: {e}")
+
+    def transfer_selected_items(self):
+        """Перенос выбранных позиций в рабочее место"""
+        if not self.current_room_id:
+            QMessageBox.warning(self, "Ошибка", "Сначала выберите комнату")
+            return
+
+        selected_ids = []
+        for row in range(self.distribution_model.rowCount()):
+            check_item = self.distribution_model.item(row, 5)
+            if check_item and check_item.checkState() == Qt.Checked:
+                id_item = self.distribution_model.item(row, 0)
+                if id_item:
+                    selected_ids.append(int(id_item.text()))
+
+        if not selected_ids:
+            QMessageBox.warning(self, "Ошибка", "Выберите позиции для переноса")
+            return
+
+        free_spot = None
+        room = self.db.get_room(self.current_room_id)
+        capacity = room[4] if room else 10
+
+        for i in range(1, capacity + 1):
+            if i not in self.workplaces_data:
+                free_spot = i
+                break
+
+        if not free_spot:
+            QMessageBox.warning(self, "Ошибка", "Нет свободных мест")
+            return
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name, category, type, serial_number FROM equipment WHERE equipment_id = ?",
+                       (selected_ids[0],))
+        equip = cursor.fetchone()
+        conn.close()
+
+        if equip:
+            data = {
+                'type': equip[2] if equip[2] else "Оборудование",
+                'name': equip[1],
+                'serial': equip[3],
+                'has_monitor': False,
+                'has_keyboard': False,
+                'has_mouse': False,
+                'has_power_cable': True,
+                'notes': f"ID в БД: {selected_ids[0]}"
+            }
+            self.workplaces_data[free_spot] = data
+            self.update_workplace_widget(free_spot, data)
+            self.db.update_equipment_room(selected_ids[0], self.current_room_id)
+
+            for row in range(self.distribution_model.rowCount()):
+                id_item = self.distribution_model.item(row, 0)
+                if id_item and int(id_item.text()) in selected_ids:
+                    check_item = self.distribution_model.item(row, 5)
+                    if check_item:
+                        check_item.setCheckState(Qt.Unchecked)
+
+            QMessageBox.information(self, "Успех", f"Позиция перенесена на место №{free_spot}")
+
     def on_branch_changed_distribution(self):
         """Изменение филиала во вкладке распределение"""
         branch_id = self.ui.comboBox_14.currentData()
@@ -876,12 +977,12 @@ class ReportWindow(QMainWindow):
             branch = self.db.get_branch(branch_id)
             if branch:
                 self.ui.spinBox_6.setMaximum(branch[2])
+                self.load_distribution_equipment()
 
     def on_floor_changed_distribution(self):
         """Изменение этажа во вкладке распределение"""
         branch_id = self.ui.comboBox_14.currentData()
         floor = self.ui.spinBox_6.value()
-
         if branch_id and floor:
             self.load_rooms_to_combo(self.ui.comboBox_16, branch_id, floor)
 
@@ -890,72 +991,45 @@ class ReportWindow(QMainWindow):
         room_id = self.ui.comboBox_16.currentData()
         if not room_id:
             return
-
         self.current_room_id = room_id
         room = self.db.get_room(room_id)
-
         if room:
             capacity = room[4]
             self.create_workplaces(capacity)
 
-    def create_workplaces(self, count):
-        """Создание рабочих мест по количеству"""
-        self.clear_workplaces()
-
-        for i in range(1, count + 1):
-            widget = WorkplaceWidget(i, self.workplaces_data.get(i))
-            widget.edit_clicked.connect(self.edit_workplace)
-            widget.delete_clicked.connect(self.delete_workplace)
-            self.workplaces_layout.insertWidget(self.workplaces_layout.count() - 1, widget)
-
-    def clear_workplaces(self):
-        """Очистка всех рабочих мест"""
-        while self.workplaces_layout.count() > 1:
-            item = self.workplaces_layout.takeAt(0)
-            if item and item.widget():
-                item.widget().deleteLater()
-
-    def edit_workplace(self, number):
-        """Редактирование рабочего места"""
-        dlg = WorkplaceDialog(self.db, self.current_room_id, number, self)
-        if dlg.exec() == QDialog.Accepted:
-            data = dlg.get_data()
-            self.workplaces_data[number] = data
-            self.update_workplace_widget(number, data)
-
-    def update_workplace_widget(self, number, data):
-        """Обновление виджета рабочего места"""
-        for i in range(self.workplaces_layout.count()):
-            item = self.workplaces_layout.itemAt(i)
-            if item and item.widget() and isinstance(item.widget(), WorkplaceWidget):
-                if item.widget().number == number:
-                    new_widget = WorkplaceWidget(number, data)
-                    new_widget.edit_clicked.connect(self.edit_workplace)
-                    new_widget.delete_clicked.connect(self.delete_workplace)
-                    self.workplaces_layout.replaceWidget(item.widget(), new_widget)
-                    item.widget().deleteLater()
-                    break
-
-    def delete_workplace(self, number):
-        """Удаление рабочего места"""
-        dlg = ConfirmationDialog(f"Удалить рабочее место №{number}?", self)
-        if dlg.exec() == QDialog.Accepted:
-            if number in self.workplaces_data:
-                del self.workplaces_data[number]
-            self.update_workplace_widget(number, None)
-
     def apply_distribution_filters(self):
         """Применение фильтров распределения"""
-        pass
+        category = self.ui.comboBox_17.currentData()
+        type_ = self.ui.comboBox_18.currentData()
+        name_filter = self.ui.lineEdit_27.text().lower()
+
+        for row in range(self.distribution_model.rowCount()):
+            show = True
+            if category and category != "Все категории":
+                cat_item = self.distribution_model.item(row, 2)
+                if cat_item and cat_item.text() != category:
+                    show = False
+            if show and type_ and type_ != "Все типы":
+                type_item = self.distribution_model.item(row, 3)
+                if type_item and type_item.text() != type_:
+                    show = False
+            if show and name_filter:
+                name_item = self.distribution_model.item(row, 1)
+                if name_item and name_filter not in name_item.text().lower():
+                    show = False
+            self.ui.tableView_2.setRowHidden(row, not show)
 
     def save_room_distribution(self):
-        """Сохранение распределения по комнате"""
+        """Сохранение распределения для комнаты"""
+        if not self.current_room_id:
+            QMessageBox.warning(self, "Ошибка", "Выберите комнату")
+            return
         dlg = ConfirmationDialog("Сохранить распределение для этой комнаты?", self)
         if dlg.exec() == QDialog.Accepted:
             QMessageBox.information(self, "Успех", "Распределение сохранено")
 
     def reset_room_distribution(self):
-        """Сброс распределения по комнате"""
+        """Сброс распределения для комнаты"""
         dlg = ConfirmationDialog("Сбросить распределение для этой комнаты?", self)
         if dlg.exec() == QDialog.Accepted:
             self.workplaces_data.clear()
@@ -1001,15 +1075,12 @@ class ReportWindow(QMainWindow):
                 f.write("=" * 50 + "\n")
                 f.write(f"ОТЧЕТ ПО КОМНАТЕ: {room[1]} - {room[2]}\n")
                 f.write("=" * 50 + "\n\n")
-
                 f.write(f"Этаж: {room[3]}\n")
                 f.write(f"Вместимость: {room[4]} чел.\n")
                 f.write(f"Столов: {room[5]}, Стульев: {room[6]}\n")
                 f.write(f"Розеток: {room[7]}, Площадь: {room[8]} м²\n\n")
-
                 f.write("РАБОЧИЕ МЕСТА:\n")
                 f.write("-" * 50 + "\n")
-
                 for i in range(1, room[4] + 1):
                     data = self.workplaces_data.get(i, {})
                     f.write(f"\nМесто №{i}:\n")
@@ -1029,9 +1100,7 @@ class ReportWindow(QMainWindow):
                             f.write(f"  Примечания: {data['notes']}\n")
                     else:
                         f.write("  не заполнено\n")
-
                 f.write("\n" + "=" * 50 + "\n")
-
             QMessageBox.information(self, "Успех", f"Отчет сохранен: {file_path}")
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить: {e}")
@@ -1041,36 +1110,190 @@ class ReportWindow(QMainWindow):
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить финальный отчет", "", "Текстовые файлы (*.txt)"
         )
-
         if not file_path:
             return
-
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write("=" * 50 + "\n")
                 f.write("ФИНАЛЬНЫЙ ОТЧЕТ ПО РАСПРЕДЕЛЕНИЮ\n")
                 f.write(f"Дата: {QDateTime.currentDateTime().toString('yyyy-MM-dd hh:mm:ss')}\n")
                 f.write("=" * 50 + "\n\n")
-
                 if self.current_room_id:
                     room = self.db.get_room(self.current_room_id)
                     if room:
                         f.write(f"Комната: {room[1]} - {room[2]}\n")
                         f.write(f"Заполнено мест: {len(self.workplaces_data)} из {room[4]}\n\n")
-
                         for num, data in self.workplaces_data.items():
                             f.write(f"Место {num}: {data.get('name', 'не заполнено')}\n")
-
             QMessageBox.information(self, "Успех", f"Отчет сохранен: {file_path}")
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить: {e}")
+
+    def setup_workplaces_area(self):
+        """Настройка области для динамических рабочих мест"""
+        self.workplaces_scroll = QScrollArea()
+        self.workplaces_scroll.setWidgetResizable(True)
+        self.workplaces_scroll.setMinimumHeight(300)
+        self.workplaces_container = QWidget()
+        self.workplaces_layout = QVBoxLayout(self.workplaces_container)
+        self.workplaces_layout.addStretch()
+        self.workplaces_scroll.setWidget(self.workplaces_container)
+        if hasattr(self.ui, 'groupBox_15'):
+            layout = self.ui.groupBox_15.layout()
+            if layout:
+                while layout.count():
+                    item = layout.takeAt(0)
+                    if item.widget():
+                        item.widget().deleteLater()
+            else:
+                layout = QVBoxLayout(self.ui.groupBox_15)
+            layout.addWidget(self.workplaces_scroll)
+
+    def create_workplaces(self, count):
+        """Создание рабочих мест по количеству"""
+        self.clear_workplaces()
+        for i in range(1, count + 1):
+            widget = WorkplaceWidget(i, self.workplaces_data.get(i))
+            widget.edit_clicked.connect(self.edit_workplace)
+            widget.delete_clicked.connect(self.delete_workplace)
+            self.workplaces_layout.insertWidget(self.workplaces_layout.count() - 1, widget)
+
+    def clear_workplaces(self):
+        """Очистка всех рабочих мест"""
+        while self.workplaces_layout.count() > 1:
+            item = self.workplaces_layout.takeAt(0)
+            if item and item.widget():
+                item.widget().deleteLater()
+
+    def edit_workplace(self, number):
+        """Редактирование рабочего места"""
+        dlg = WorkplaceDialog(self.db, self.current_room_id, number, self)
+        if dlg.exec() == QDialog.Accepted:
+            data = dlg.get_data()
+            self.workplaces_data[number] = data
+            self.update_workplace_widget(number, data)
+
+    def update_workplace_widget(self, number, data):
+        """Обновление виджета рабочего места"""
+        for i in range(self.workplaces_layout.count()):
+            item = self.workplaces_layout.itemAt(i)
+            if item and item.widget() and isinstance(item.widget(), WorkplaceWidget):
+                if item.widget().number == number:
+                    new_widget = WorkplaceWidget(number, data)
+                    new_widget.edit_clicked.connect(self.edit_workplace)
+                    new_widget.delete_clicked.connect(self.delete_workplace)
+                    self.workplaces_layout.replaceWidget(item.widget(), new_widget)
+                    item.widget().deleteLater()
+                    break
+
+    def delete_workplace(self, number):
+        """Удаление рабочего места"""
+        dlg = ConfirmationDialog(f"Удалить рабочее место №{number}?", self)
+        if dlg.exec() == QDialog.Accepted:
+            if number in self.workplaces_data:
+                del self.workplaces_data[number]
+            self.update_workplace_widget(number, None)
+
+    # ========== ОБЩИЕ МЕТОДЫ ==========
+    def load_initial_data(self):
+        """Загрузка начальных данных"""
+        print("Загрузка начальных данных...")
+        self.load_branches_to_combo(self.ui.comboBox_5)
+        self.load_branches_to_combo(self.ui.comboBox_6)
+        self.load_employees_to_combo(self.ui.comboBox_8)
+        self.load_branches_to_combo(self.ui.comboBox_3)
+        self.load_branches_to_combo(self.ui.comboBox_4)
+        self.load_employees_to_combo(self.ui.comboBox)
+        self.load_employees_to_combo(self.ui.comboBox_2)
+        self.load_employees_with_position(self.ui.comboBox_13)
+        self.load_branches_to_combo(self.ui.comboBox_15)
+        self.load_branches_to_combo(self.ui.comboBox_14)
+        self.load_categories_to_combo(self.ui.comboBox_9)
+        self.load_types_to_combo(self.ui.comboBox_10)
+        if hasattr(self.ui, 'dateTimeEdit'):
+            self.ui.dateTimeEdit.setDateTime(QDateTime.currentDateTime())
+        self.ui.progressBar.setValue(0)
+        print("Загрузка данных завершена")
+
+    def load_branches_to_combo(self, combo):
+        """Загрузка филиалов в комбобокс"""
+        if not combo:
+            return
+        combo.clear()
+        combo.addItem("Выберите филиал", None)
+        try:
+            branches = self.db.get_all_branches()
+            for branch in branches:
+                combo.addItem(branch[1], branch[0])
+        except Exception as e:
+            print(f"Ошибка загрузки филиалов: {e}")
+
+    def load_employees_to_combo(self, combo):
+        """Загрузка сотрудников в комбобокс"""
+        if not combo:
+            return
+        combo.clear()
+        combo.addItem("Выберите сотрудника", None)
+        try:
+            employees = self.db.get_employees()
+            for emp in employees:
+                combo.addItem(f"{emp[1]} ({emp[2]})", emp[0])
+        except Exception as e:
+            print(f"Ошибка загрузки сотрудников: {e}")
+
+    def load_employees_with_position(self, combo):
+        """Загрузка сотрудников с разделением ФИО и должности"""
+        if not combo:
+            return
+        combo.clear()
+        combo.addItem("Выберите сотрудника", None)
+        try:
+            employees = self.db.get_employees()
+            for emp in employees:
+                combo.addItem(emp[1], emp[0])
+        except Exception as e:
+            print(f"Ошибка загрузки сотрудников: {e}")
+
+    def load_categories_to_combo(self, combo):
+        """Загрузка категорий оборудования"""
+        if not combo:
+            return
+        combo.clear()
+        combo.addItem("Все категории", None)
+        categories = ["Оргтехника", "Мебель", "Медицинское", "Инструменты", "Расходные материалы"]
+        for cat in categories:
+            combo.addItem(cat, cat)
+
+    def load_types_to_combo(self, combo):
+        """Загрузка типов оборудования"""
+        if not combo:
+            return
+        combo.clear()
+        combo.addItem("Все типы", None)
+        types = ["Ноутбук", "Компьютер", "Принтер", "Монитор", "Стол", "Стул", "Кровать", "Холодильник"]
+        for t in types:
+            combo.addItem(t, t)
+
+    def load_rooms_to_combo(self, combo, branch_id, floor):
+        """Загрузка комнат в комбобокс"""
+        if not combo:
+            return
+        combo.clear()
+        combo.addItem("Выберите комнату", None)
+        if branch_id and floor:
+            try:
+                rooms = self.db.get_rooms_by_branch_and_floor(branch_id, floor)
+                for room in rooms:
+                    combo.addItem(f"{room[1]} - {room[2]}", room[0])
+                print(f"Загружено комнат: {len(rooms)}")
+            except Exception as e:
+                print(f"Ошибка загрузки комнат: {e}")
 
     # ========== МЕТОДЫ МЕНЮ ==========
     def new_report(self):
         """Новая отчетность"""
         dlg = SaveConfirmationDialog(self)
         result = dlg.exec()
-
         if result == 1:
             self.save_report_txt()
             self.clear_all()
@@ -1081,7 +1304,6 @@ class ReportWindow(QMainWindow):
         """Новое поступление"""
         dlg = SaveConfirmationDialog(self)
         result = dlg.exec()
-
         if result == 1:
             self.save_arrival()
             self.clear_arrival_tab()
@@ -1089,7 +1311,7 @@ class ReportWindow(QMainWindow):
             self.clear_arrival_tab()
 
     def save_report_txt(self):
-        """Сохранить отчет в .txt (текущая вкладка)"""
+        """Сохранить отчет в .txt"""
         current_tab = self.ui.tabWidget.currentIndex()
         if current_tab == 0:
             self.export_room_report()
@@ -1113,21 +1335,25 @@ class ReportWindow(QMainWindow):
                                         f"ID: {report[0]}\nНазвание: {report[1]}\nДата: {report[2]}")
 
     def on_font_size(self):
-        pass
+        QMessageBox.information(self, "Информация", "Функция изменения шрифта будет добавлена позже")
 
     def on_theme(self):
-        pass
+        QMessageBox.information(self, "Информация", "Функция изменения темы будет добавлена позже")
 
     def show_version(self):
-        QMessageBox.information(self, "Версия", "Версия 1.0")
+        QMessageBox.information(self, "Версия", "Версия 1.0\nДипломный проект 2026")
 
     def show_project_info(self):
         QMessageBox.information(self, "Информация о проекте",
-                                "Telegram: @katwell1\n\nДипломный проект 2026")
+                                "Дипломный проект\n"
+                                "Тема: Система учета оборудования\n"
+                                "Разработчик: ...\n"
+                                "Telegram: @katwell1\n\n"
+                                "© 2026")
 
     def open_environment_settings(self):
-        QMessageBox.information(self, "Настройки окружения",
-                                "Здесь будет открываться окно настроек")
+        """Открыть настройки окружения (старый метод)"""
+        self.open_settings_window()
 
     def clear_all(self):
         self.clear_arrival_tab()
@@ -1143,8 +1369,6 @@ class ReportWindow(QMainWindow):
             self.ui.lineEdit_6.clear()
         if hasattr(self.ui, 'plainTextEdit'):
             self.ui.plainTextEdit.clear()
-        if hasattr(self.ui, 'tableWidget'):
-            self.ui.tableWidget.setRowCount(0)
 
     def clear_inventory_tab(self):
         if hasattr(self.ui, 'lineEdit'):

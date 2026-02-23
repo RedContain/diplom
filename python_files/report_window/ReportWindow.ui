@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1909</width>
+    <width>1990</width>
     <height>983</height>
    </rect>
   </property>
@@ -30,7 +30,7 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;в&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
@@ -330,7 +330,7 @@
         <rect>
          <x>350</x>
          <y>20</y>
-         <width>351</width>
+         <width>441</width>
          <height>801</height>
         </rect>
        </property>
@@ -413,7 +413,7 @@
       <widget class="QGroupBox" name="groupBox_15">
        <property name="geometry">
         <rect>
-         <x>710</x>
+         <x>800</x>
          <y>10</y>
          <width>511</width>
          <height>811</height>
@@ -426,9 +426,9 @@
       <widget class="QPushButton" name="pushButton_4">
        <property name="geometry">
         <rect>
-         <x>1230</x>
+         <x>1320</x>
          <y>20</y>
-         <width>231</width>
+         <width>141</width>
          <height>26</height>
         </rect>
        </property>
@@ -439,9 +439,9 @@
       <widget class="QPushButton" name="pushButton_6">
        <property name="geometry">
         <rect>
-         <x>1230</x>
+         <x>1320</x>
          <y>50</y>
-         <width>231</width>
+         <width>141</width>
          <height>26</height>
         </rect>
        </property>
@@ -452,14 +452,27 @@
       <widget class="QPushButton" name="pushButton_7">
        <property name="geometry">
         <rect>
-         <x>1230</x>
+         <x>1320</x>
          <y>80</y>
-         <width>231</width>
+         <width>141</width>
          <height>26</height>
         </rect>
        </property>
        <property name="text">
         <string>Выгрузить отчетность:</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_15">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>790</y>
+         <width>401</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Перенести выбранное</string>
        </property>
       </widget>
      </widget>
@@ -1618,9 +1631,9 @@
      <widget class="QTableWidget" name="tableWidget">
       <property name="geometry">
        <rect>
-        <x>1360</x>
+        <x>1140</x>
         <y>50</y>
-        <width>531</width>
+        <width>751</width>
         <height>771</height>
        </rect>
       </property>
@@ -1646,7 +1659,7 @@
        <rect>
         <x>900</x>
         <y>800</y>
-        <width>451</width>
+        <width>231</width>
         <height>26</height>
        </rect>
       </property>
@@ -1659,7 +1672,7 @@
        <rect>
         <x>900</x>
         <y>770</y>
-        <width>211</width>
+        <width>231</width>
         <height>26</height>
        </rect>
       </property>
@@ -1696,7 +1709,7 @@
      <widget class="QLabel" name="label_38">
       <property name="geometry">
        <rect>
-        <x>1360</x>
+        <x>1140</x>
         <y>10</y>
         <width>351</width>
         <height>31</height>
@@ -1707,6 +1720,19 @@
       </property>
       <property name="text">
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt;&quot;&gt;БАЗА ДАННЫХ ПОСТУПЛЕНИЯ:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-size:18pt;&quot;&gt;&lt;br/&gt;&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_16">
+      <property name="geometry">
+       <rect>
+        <x>900</x>
+        <y>380</y>
+        <width>231</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Добавить позицию: &gt;</string>
       </property>
      </widget>
     </widget>
@@ -1730,7 +1756,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1909</width>
+     <width>1990</width>
      <height>33</height>
     </rect>
    </property>
