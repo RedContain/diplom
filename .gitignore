@@ -7,3 +7,4 @@ __pycache__/
 .Python
 *.sqlite
 *.db
+/python_files/report_window/Инвентаризация_102.txt
