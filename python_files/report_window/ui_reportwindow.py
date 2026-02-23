@@ -896,7 +896,7 @@ class Ui_reportWindow(object):
 
         self.gridLayoutWidget_21 = QWidget(self.groupBox_11)
         self.gridLayoutWidget_21.setObjectName(u"gridLayoutWidget_21")
-        self.gridLayoutWidget_21.setGeometry(QRect(10, 321, 241, 92))
+        self.gridLayoutWidget_21.setGeometry(QRect(10, 321, 271, 92))
         self.gridLayout_21 = QGridLayout(self.gridLayoutWidget_21)
         self.gridLayout_21.setObjectName(u"gridLayout_21")
         self.gridLayout_21.setContentsMargins(0, 0, 0, 0)
@@ -922,6 +922,7 @@ class Ui_reportWindow(object):
 
         self.doubleSpinBox = QDoubleSpinBox(self.gridLayoutWidget_21)
         self.doubleSpinBox.setObjectName(u"doubleSpinBox")
+        self.doubleSpinBox.setMaximum(10000000000000000.000000000000000)
 
         self.gridLayout_21.addWidget(self.doubleSpinBox, 1, 1, 1, 1)
 
@@ -1053,7 +1054,7 @@ class Ui_reportWindow(object):
 
         self.retranslateUi(reportWindow)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         self.tabWidget_2.setCurrentIndex(0)
 
 

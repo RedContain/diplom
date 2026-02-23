@@ -205,87 +205,6 @@ class DatabaseHandler:
         conn.commit()
         conn.close()
 
-    # ========== ОТЧЕТЫ ==========
-    def add_report(self, report_data):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       INSERT INTO reports (
-                           report_name, report_date, description, order_number,
-                           worker_id, environment_id
-                       ) VALUES (?, ?, ?, ?, ?, ?)
-                       """, (
-                           report_data.get('name', ''),
-                           report_data.get('date', datetime.now().strftime("%Y-%m-%d %H:%M:%S")),
-                           report_data.get('description', ''),
-                           report_data.get('order_number', 0),
-                           report_data.get('worker_id'),
-                           report_data.get('environment_id')
-                       ))
-        report_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
-        return report_id
-
-    def get_all_reports(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       SELECT report_id, report_name, report_date, description, order_number
-                       FROM reports
-                       ORDER BY report_date DESC
-                       """)
-        reports = cursor.fetchall()
-        conn.close()
-        return reports
-
-    def get_report(self, report_id):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       SELECT report_id, report_name, report_date, description, order_number,
-                              worker_id, environment_id
-                       FROM reports
-                       WHERE report_id = ?
-                       """, (report_id,))
-        report = cursor.fetchone()
-        conn.close()
-        return report
-
-    # ========== ИНВЕНТАРИЗАЦИЯ ==========
-    def add_inventory_log(self, log_data):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute("""
-                       INSERT INTO inventory_log (
-                           report_id, equipment_id, old_status, new_status,
-                           comment, worker_id
-                       ) VALUES (?, ?, ?, ?, ?, ?)
-                       """, (
-                           log_data.get('report_id'),
-                           log_data.get('equipment_id'),
-                           log_data.get('old_status'),
-                           log_data.get('new_status'),
-                           log_data.get('comment', ''),
-                           log_data.get('worker_id')
-                       ))
-        log_id = cursor.lastrowid
-        conn.commit()
-        conn.close()
-        return log_id
-
-    # ========== ПОЛЬЗОВАТЕЛИ ==========
-    def get_users(self):
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        try:
-            cursor.execute("SELECT username FROM users")
-            users = cursor.fetchall()
-        except:
-            users = []
-        conn.close()
-        return users
-
 
 # ========== ДИАЛОГ СПИСКА ОТЧЕТОВ ==========
 class ReportsListDialog(QDialog):
@@ -524,7 +443,7 @@ class ReportWindow(QMainWindow):
 
         self.setCentralWidget(self.ui.centralwidget)
 
-        # НЕ используем меню из UI, создаем свое
+        # Создаем меню программно
         self.create_menu()
 
         self.setup_tabs()
@@ -607,6 +526,12 @@ class ReportWindow(QMainWindow):
         self.load_branches_to_combo(self.ui.comboBox_5)
         self.load_branches_to_combo(self.ui.comboBox_6)
         self.load_employees_to_combo(self.ui.comboBox_8)
+
+        # Увеличиваем максимальное значение цены
+        if hasattr(self.ui, 'doubleSpinBox'):
+            self.ui.doubleSpinBox.setMaximum(9999999.99)
+            self.ui.doubleSpinBox.setMinimum(0)
+            self.ui.doubleSpinBox.setSingleStep(100)
 
         # Настройка tableWidget для отображения базы данных поступлений
         self.ui.tableWidget.setColumnCount(7)
@@ -785,6 +710,8 @@ class ReportWindow(QMainWindow):
             self.ui.comboBox_4.currentIndexChanged.connect(self.on_branch_changed_inventory)
         if hasattr(self.ui, 'spinBox_3'):
             self.ui.spinBox_3.valueChanged.connect(self.on_floor_changed_inventory)
+        if hasattr(self.ui, 'comboBox_7'):
+            self.ui.comboBox_7.currentIndexChanged.connect(self.on_room_changed_inventory)
 
         if hasattr(self.ui, 'tableView'):
             self.ui.tableView.setModel(QStandardItemModel())
@@ -792,6 +719,7 @@ class ReportWindow(QMainWindow):
             if model:
                 model.setHorizontalHeaderLabels(["ID", "Название", "Категория", "Серийный №", "Статус"])
 
+        # Фильтры
         if hasattr(self.ui, 'comboBox_12'):
             self.ui.comboBox_12.currentIndexChanged.connect(self.apply_inventory_filters)
         if hasattr(self.ui, 'comboBox_11'):
@@ -805,6 +733,11 @@ class ReportWindow(QMainWindow):
 
         self.load_categories_to_combo(self.ui.comboBox_12)
         self.load_types_to_combo(self.ui.comboBox_11)
+
+        # Подключаем кнопку для выгрузки инвентаризации
+        if hasattr(self.ui, 'pushButton_11'):  # "Печать отчетности по комнате"
+            self.ui.pushButton_11.clicked.connect(self.export_inventory_room_report)
+            print("✅ Кнопка инвентаризации подключена")
 
     def on_branch_changed_inventory(self):
         """Изменение филиала во вкладке инвентаризация"""
@@ -821,9 +754,104 @@ class ReportWindow(QMainWindow):
         if branch_id and floor and hasattr(self.ui, 'comboBox_7'):
             self.load_rooms_to_combo(self.ui.comboBox_7, branch_id, floor)
 
+    def on_room_changed_inventory(self):
+        """При изменении комнаты загружаем оборудование"""
+        room_id = self.ui.comboBox_7.currentData() if hasattr(self.ui, 'comboBox_7') else None
+
+        if not room_id:
+            return
+
+        # Загружаем оборудование в tableView
+        equipment = self.db.get_equipment_by_room(room_id)
+
+        model = self.ui.tableView.model()
+        if model:
+            model.removeRows(0, model.rowCount())
+            for item in equipment:
+                row = []
+                row.append(QStandardItem(str(item[0])))  # ID
+                row.append(QStandardItem(item[1]))  # Название
+                row.append(QStandardItem(item[2]))  # Категория
+                row.append(QStandardItem(item[4]))  # Серийный номер
+                row.append(QStandardItem(item[5]))  # Статус
+                model.appendRow(row)
+
+            print(f"Загружено оборудование: {len(equipment)} шт.")
+
     def apply_inventory_filters(self):
         """Применение фильтров инвентаризации"""
         pass
+
+    def export_inventory_room_report(self):
+        """Выгрузка отчета по инвентаризации комнаты в .txt"""
+        # Получаем выбранную комнату
+        room_id = self.ui.comboBox_7.currentData() if hasattr(self.ui, 'comboBox_7') else None
+
+        if not room_id:
+            QMessageBox.warning(self, "Ошибка", "Выберите комнату")
+            return
+
+        # Получаем данные о комнате
+        room = self.db.get_room(room_id)
+        if not room:
+            QMessageBox.warning(self, "Ошибка", "Комната не найдена")
+            return
+
+        # Получаем оборудование в комнате
+        equipment = self.db.get_equipment_by_room(room_id)
+
+        # Диалог сохранения файла
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Сохранить отчет по инвентаризации",
+            f"Инвентаризация_{room[1]}.txt",
+            "Текстовые файлы (*.txt)"
+        )
+
+        if not file_path:
+            return
+
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write("=" * 60 + "\n")
+                f.write("ИНВЕНТАРИЗАЦИОННАЯ ОПИСЬ\n")
+                f.write("=" * 60 + "\n\n")
+
+                # Информация о комнате
+                f.write(f"Комната: {room[1]} - {room[2]}\n")
+                f.write(f"Этаж: {room[3]}\n")
+                f.write(f"Вместимость: {room[4]} чел.\n")
+                f.write(f"Площадь: {room[8]} м²\n")
+                f.write(f"Столов: {room[5]}, Стульев: {room[6]}, Розеток: {room[7]}\n")
+                f.write(f"Дата инвентаризации: {QDateTime.currentDateTime().toString('dd.MM.yyyy hh:mm')}\n\n")
+
+                f.write("=" * 60 + "\n")
+                f.write("ПЕРЕЧЕНЬ ОБОРУДОВАНИЯ\n")
+                f.write("=" * 60 + "\n\n")
+
+                if not equipment:
+                    f.write("В комнате нет оборудования\n")
+                else:
+                    # Заголовок таблицы
+                    f.write(f"{'№':<4} {'Наименование':<30} {'Категория':<15} {'Тип':<15} {'Серийный №':<15} {'Статус':<10}\n")
+                    f.write("-" * 90 + "\n")
+
+                    for i, item in enumerate(equipment, 1):
+                        f.write(f"{i:<4} {item[1]:<30} {item[2]:<15} {item[3]:<15} {item[4]:<15} {item[5]:<10}\n")
+
+                    f.write("-" * 90 + "\n")
+                    f.write(f"Всего единиц: {len(equipment)}\n\n")
+
+                # Подписи
+                f.write("\n" + "=" * 60 + "\n")
+                f.write("Ответственный за инвентаризацию:\n\n")
+                f.write("____________________  /______________/\n")
+                f.write("   (подпись)              (ФИО)\n\n")
+                f.write("Дата: ______________\n")
+
+            QMessageBox.information(self, "Успех", f"Отчет сохранен:\n{file_path}")
+
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить отчет:\n{e}")
 
     # ========== ВКЛАДКА РАСПРЕДЕЛЕНИЕ ==========
     def setup_distribution_tab(self):
