@@ -4,11 +4,22 @@ from datetime import datetime
 
 
 class DatabaseHandler:
-    def __init__(self, db_path="database/company.db"):
+    def __init__(self, db_path=None):
+        if db_path is None:
+            # database_handler.py находится в python_files/database/
+            current_file = os.path.abspath(__file__)
+            # Путь к папке database
+            db_dir = os.path.dirname(current_file)
+            # Путь к company.db
+            db_path = os.path.join(db_dir, "company.db")
+
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.db_path = db_path
         print(f"🔄 Подключение к БД: {db_path}")
         self.create_tables()
+
+        # 👇 ВОТ ЭТУ СТРОКУ УДАЛИ ИЛИ ЗАКОММЕНТИРУЙ:
+        # self.add_test_data_if_empty()
 
     def get_connection(self):
         conn = sqlite3.connect(self.db_path)
@@ -151,9 +162,104 @@ class DatabaseHandler:
                        )
                        ''')
 
+        cursor.execute('''
+                       CREATE TABLE IF NOT EXISTS floor_maps (
+                                                                 map_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                 branch_id INTEGER NOT NULL,
+                                                                 floor_number INTEGER NOT NULL,
+                                                                 image_path TEXT NOT NULL,
+                                                                 UNIQUE(branch_id, floor_number),
+                           FOREIGN KEY (branch_id) REFERENCES branches(branch_id) ON DELETE CASCADE
+                           )
+                       ''')
+
+        # Таблица для координат точек (маркеров) кабинетов на плане
+        cursor.execute('''
+                       CREATE TABLE IF NOT EXISTS room_markers (
+                                                                   marker_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                   map_id INTEGER NOT NULL,
+                                                                   room_id INTEGER NOT NULL,
+                                                                   x REAL NOT NULL,
+                                                                   y REAL NOT NULL,
+                                                                   UNIQUE(map_id, room_id),
+                           FOREIGN KEY (map_id) REFERENCES floor_maps(map_id) ON DELETE CASCADE,
+                           FOREIGN KEY (room_id) REFERENCES room(room_id) ON DELETE CASCADE
+                           )
+                       ''')
+
         conn.commit()
         conn.close()
-        print("✅ База данных создана/обновлена!")
+        print("✅ Таблицы созданы!")
+
+    # ========== МЕТОДЫ ДЛЯ ГРАФИКИ ==========
+
+    def save_floor_map(self, branch_id, floor_num, img_path):
+        """Сохраняет или обновляет путь к картинке плана этажа"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO floor_maps (branch_id, floor_number, image_path)
+                VALUES (?, ?, ?)
+            """, (branch_id, floor_num, img_path))
+            conn.commit()
+            return cursor.lastrowid
+        finally:
+            conn.close()
+
+    def add_marker(self, map_id, room_id, x, y):
+        """Добавляет или обновляет координату комнаты на плане"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT OR REPLACE INTO room_markers (map_id, room_id, x, y)
+                VALUES (?, ?, ?, ?)
+            """, (map_id, room_id, x, y))
+            conn.commit()
+        finally:
+            conn.close()
+
+    def get_map_data(self, branch_id, floor_num):
+        """Получает путь к картинке и все маркеры для этажа"""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            # Получаем карту
+            cursor.execute("SELECT map_id, image_path FROM floor_maps WHERE branch_id = ? AND floor_number = ?",
+                           (branch_id, floor_num))
+            map_info = cursor.fetchone()
+
+            if not map_info:
+                return None, []
+
+            # Получаем маркеры для этой карты
+            cursor.execute("""
+                           SELECT rm.x, rm.y, rm.room_id, r.room_name, r.room_number
+                           FROM room_markers rm
+                                    JOIN room r ON rm.room_id = r.room_id
+                           WHERE rm.map_id = ?
+                           """, (map_info['map_id'],))
+            markers = cursor.fetchall()
+
+            return map_info, markers
+        finally:
+            conn.close()
+
+    def delete_markers_by_map(self, map_id):
+        """Удаляет только точки на карте"""
+        conn = self.get_connection()
+        conn.execute("DELETE FROM room_markers WHERE map_id = ?", (map_id,))
+        conn.commit()
+        conn.close()
+
+    def delete_full_map(self, map_id):
+        """Удаляет и карту, и точки (благодаря ON DELETE CASCADE)"""
+        conn = self.get_connection()
+        conn.execute("DELETE FROM floor_maps WHERE map_id = ?", (map_id,))
+        conn.commit()
+        conn.close()
+        print("✅ Карта удалена!")
 
     # ========== МЕТОДЫ ДЛЯ КОМНАТ ==========
 
@@ -637,20 +743,8 @@ if __name__ == "__main__":
     db = DatabaseHandler()
     print("\n✅ DatabaseHandler готов к работе!")
 
-    # Проверка создания таблиц
-    conn = db.get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = cursor.fetchall()
-    print("\n📊 Таблицы в БД:")
-    for table in tables:
-        print(f"  - {table[0]}")
-
-    # Проверка структуры комнат
-    cursor.execute("PRAGMA table_info(room)")
-    columns = cursor.fetchall()
-    print("\n🏢 Структура таблицы room:")
-    for col in columns:
-        print(f"  - {col[1]}: {col[2]}")
-
-    conn.close()
+    # Проверка филиалов
+    branches = db.get_all_branches()
+    print(f"\n📋 Филиалы в БД: {len(branches)}")
+    for branch in branches:
+        print(f"  - {branch['name']} (этажей: {branch['floors_count']})")

@@ -20,9 +20,9 @@ if settings_path not in sys.path:
     sys.path.insert(0, settings_path)
     print(f"✅ Добавлен путь к настройкам: {settings_path}")
 
-# Импортируем DatabaseHandler из settings.py (там есть все методы для отчетов)
+# Импортируем DatabaseHandler из database_handler.py
 try:
-    from settings import DatabaseHandler
+    from python_files.database.database_handler import DatabaseHandler
     from settings import MainWindow as SettingsWindow
     SETTINGS_AVAILABLE = True
     print("✅ Модуль настроек загружен")
@@ -31,9 +31,9 @@ except ImportError as e:
     SETTINGS_AVAILABLE = False
     SettingsWindow = None
 
-# Путь к БД
+# Путь к БД (ОДИН ПУТЬ!)
 python_files_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-db_path = os.path.join(python_files_dir, "database", "database", "company.db")
+db_path = os.path.join(python_files_dir, "database", "company.db")
 ui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ReportWindow.ui")
 
 print(f"Путь к БД: {db_path}")
@@ -346,8 +346,24 @@ class ReportWindow(QMainWindow):
             QMessageBox.critical(self, "Ошибка", f"Не удалось открыть настройки:\n{e}")
 
     def show_schema(self):
-        """Показать схему"""
-        QMessageBox.information(self, "Схема", "Здесь будет открываться схема")
+        """Открыть окно со схемой из plane.py"""
+        try:
+            # Путь к файлу plane.py
+            plane_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                      "report_image", "plane.py")
+
+            if not os.path.exists(plane_path):
+                QMessageBox.warning(self, "Ошибка", f"Файл схемы не найден:\n{plane_path}")
+                return
+
+            # Запускаем plane.py как отдельный процесс
+            import subprocess
+            subprocess.Popen([sys.executable, plane_path])
+
+            self.statusBar().showMessage("Схема открыта в новом окне", 3000)
+
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось открыть схему:\n{e}")
 
     def setup_tabs(self):
         """Настройка вкладок"""
